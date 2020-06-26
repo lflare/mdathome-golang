@@ -42,16 +42,35 @@ var client *http.Client
 // var apiBackend := "https://mangadex-test.net"
 var apiBackend = "https://api.mangadex.network"
 
+func createClientSettings() {
+    clientSettingsSampleBytes, err := json.MarshalIndent(clientSettings, "", "    ")
+    if err != nil {
+        log.Fatalln("Failed to marshal sample settings.json")
+    }
+
+    err = ioutil.WriteFile("settings.json", clientSettingsSampleBytes, 0600)
+    if err != nil {
+        log.Fatalf("Failed to create sample settings.json: %v", err)
+    }
+}
+
 // Client setting handler
 func loadClientSettings() {
     // Read client settings
     clientSettingsJson, err := ioutil.ReadFile("settings.json")
     if err != nil {
-        log.Fatalf("Failed to read client configuration file: %v", err)
+        log.Println("Failed to read client configuration file, creating anew: %v", err)
+        createClientSettings()
+        log.Fatalf("Created sample settings.json! Please edit it before running again!")
     }
     err = json.Unmarshal(clientSettingsJson, &clientSettings)
     if err != nil {
         log.Fatalf("Unable to unmarshal JSON file: %v", err)
+    }
+
+    // Check client configuration
+    if clientSettings.ClientSecret == "" {
+        log.Fatalf("Empty secret! Cannot run!")
     }
 
     // Print client configuration
