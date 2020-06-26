@@ -163,14 +163,17 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
     // Sanitized URL
     if tokens["image_type"] != "data" && tokens["image_type"] != "data-saver" {
+        log.Printf("Request for %s failed", r.URL.Path)
         w.WriteHeader(http.StatusBadRequest)
         return
     }
     if matched, _ := regexp.MatchString(`^[0-9a-f]{32}$`, tokens["chapter_hash"]); !matched {
+        log.Printf("Request for %s failed", r.URL.Path)
         w.WriteHeader(http.StatusBadRequest)
         return
     }
     if matched, _ := regexp.MatchString(`[a-zA-Z0-9]{1,4}\.(jpg|jpeg|png|gif)$`, tokens["image_filename"]); !matched {
+        log.Printf("Request for %s failed", r.URL.Path)
         w.WriteHeader(http.StatusBadRequest)
         return
     }
@@ -212,7 +215,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
         // Send request
         imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitized_url)
         if err != nil {
-            log.Panicf("ERROR: %v", err)
+            log.Panicf("Request for %s failed", r.URL.Path)
         }
         defer imageFromUpstream.Body.Close()
 
