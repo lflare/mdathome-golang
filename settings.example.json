@@ -1,0 +1,10 @@
+{
+  "cache_directory": "./cache",
+  "client_secret": "",
+  "client_port": 44300,
+  "max_cache_size_in_mebibytes": 10000,
+  "max_reported_size_in_mebibytes": 10000,
+  "max_kilobits_per_second": 50000,
+  "graceful_shutdown_in_seconds": 180,
+  "cache_scan_interval_in_seconds": 300,
+}
