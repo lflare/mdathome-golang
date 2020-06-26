@@ -106,6 +106,13 @@ func pingServer() ServerResponse {
     // Print server settings out
     printableResponse := string(response)
     tlsIndex := strings.Index(printableResponse, "\"tls\"")
+    if tlsIndex == -1 {
+        log.Printf("Received invalid server response: %s", printableResponse)
+
+        if serverResponse.Tls.Certificate == "" {
+            log.Fatalln("No valid TLS certificate found in memory, cannot continue!")
+        }
+    }
     log.Printf("Server settings received! - %s...", string(response[:tlsIndex]))
 
     // Decode & unmarshal server response
