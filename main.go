@@ -161,6 +161,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
         r.Header.Set("Referer", matched)
     }
 
+    // Add server headers
+    w.Header().Set("Server", "MangaDex@Home - github.com/lflare/mdathome-golang")
+    w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
+    w.Header().Set("Access-Control-Expose-Headers", "*")
+
     // Log request
     log.Printf("Request for %s - %s - %s received", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
 
@@ -171,10 +176,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusNotModified)
         return
     }
-
-    // Add headers
-    w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
-    w.Header().Set("Access-Control-Expose-Headers", "*")
 
     // Check if image already in cache
     if imageFromCache, ok := cache.Get(sanitized_url); !ok {
