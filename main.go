@@ -309,7 +309,7 @@ func main() {
 
     // Prepare client from retryablehttp
     retryClient := retryablehttp.NewClient()
-    retryClient.RetryMax = 4
+    retryClient.RetryMax = 10
     client = retryClient.StandardClient()
     client.Timeout = time.Second * 15
 
