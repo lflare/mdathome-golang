@@ -278,7 +278,8 @@ func ShutdownHandler() {
 }
 
 func main() {
-    // Prepare logging
+    // Prepare logger
+    os.MkdirAll("log", os.ModePerm)
     f, err := os.OpenFile("log/latest.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
     if err != nil {
         log.Fatalf("Failed to open log/latest.log: %v", err)
