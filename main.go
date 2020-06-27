@@ -194,6 +194,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Server", "MangaDex@Home - github.com/lflare/mdathome-golang")
     w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
     w.Header().Set("Access-Control-Expose-Headers", "*")
+    w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
     w.Header().Set("Cache-Control", "public, max-age=1209600")
 
     // Log request
