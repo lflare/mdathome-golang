@@ -59,7 +59,7 @@ func loadClientSettings() {
 	// Read client settings
 	clientSettingsJson, err := ioutil.ReadFile("settings.json")
 	if err != nil {
-		log.Println("Failed to read client configuration file, creating anew: %v", err)
+		log.Printf("Failed to read client configuration file, creating anew: %v", err)
 		createClientSettings()
 		log.Fatalf("Created sample settings.json! Please edit it before running again!")
 	}
