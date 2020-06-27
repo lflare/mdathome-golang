@@ -19,7 +19,7 @@ import (
 
     "github.com/gorilla/mux"
     "github.com/hashicorp/go-retryablehttp"
-    "github.com/lflare/mdathome-golang/diskcache"
+    "github.com/lflare/diskcache-golang"
 )
 
 // Global variables
