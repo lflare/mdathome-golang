@@ -317,8 +317,8 @@ func ShutdownHandler() {
 
 func main() {
 	// Prepare logger
-    logWriter := GetLogWriter()
-    defer logWriter.Close()
+	logWriter := GetLogWriter()
+	defer logWriter.Close()
 
 	// Load client settings
 	loadClientSettings()

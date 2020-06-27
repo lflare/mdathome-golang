@@ -38,8 +38,8 @@ func GetLogWriter() *os.File {
 		w: logWriter,
 	}
 	log.SetFlags(0)
-    log.SetOutput(writer)
+	log.SetOutput(writer)
 
-    // Return file pointer
-    return file
+	// Return file pointer
+	return file
 }
