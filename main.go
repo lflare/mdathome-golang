@@ -18,8 +18,8 @@ import (
     "time"
 
     "github.com/gorilla/mux"
-    "github.com/lflare/mdathome-golang/diskcache"
     "github.com/hashicorp/go-retryablehttp"
+    "github.com/lflare/mdathome-golang/diskcache"
 )
 
 // Global variables
