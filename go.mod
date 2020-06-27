@@ -3,7 +3,9 @@ module github.com/lflare/mdathome-golang
 go 1.14
 
 require (
-    github.com/gorilla/mux
-    github.com/hashicorp/go-retryablehttp
-    github.com/lflare/mdathome-golang/diskcache
+	github.com/boltdb/bolt v1.3.1
+	github.com/gorilla/mux v1.7.4
+	github.com/hashicorp/go-retryablehttp v0.6.6
+	github.com/lflare/diskcache-golang v0.0.0-20200627112332-fdd34c672a19
+	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae
 )
