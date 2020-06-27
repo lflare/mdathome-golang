@@ -218,7 +218,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		// Send request
 		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitized_url)
 		if err != nil {
-			log.Panicf("Request for %s failed", r.URL.Path)
+			log.Printf("Request for %s failed: %v", serverResponse.ImageServer + sanitized_url, err)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
 		}
 		defer imageFromUpstream.Body.Close()
 
