@@ -219,6 +219,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
         }
         defer imageFromUpstream.Body.Close()
 
+        // Set Content-Length
+        w.Header().Set("Content-Length", imageFromUpstream.Header.Get("Content-Length"))
+
         // Set timing header
         processedTime := time.Now().Sub(startTime).Milliseconds()
         w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
@@ -239,6 +242,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
         // Log cache hit
         log.Printf("Request for %s - %s - %s hit cache", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
         w.Header().Set("X-Cache", "HIT")
+
+        // Set Content-Length
+        w.Header().Set("Content-Length", strconv.Itoa(length))
 
         // Set timing header
         processedTime := time.Now().Sub(startTime).Milliseconds()
