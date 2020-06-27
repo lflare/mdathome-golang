@@ -191,12 +191,12 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     // Add server headers
-    w.Header().Set("Server", "MangaDex@Home - github.com/lflare/mdathome-golang")
     w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
     w.Header().Set("Access-Control-Expose-Headers", "*")
-    w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
-    w.Header().Set("X-Content-Type-Options": "nosniff")
     w.Header().Set("Cache-Control", "public, max-age=1209600")
+    w.Header().Set("Server", "MangaDex@Home - github.com/lflare/mdathome-golang")
+    w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
+    w.Header().Set("X-Content-Type-Options", "nosniff")
 
     // Log request
     log.Printf("Request for %s - %s - %s received", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
