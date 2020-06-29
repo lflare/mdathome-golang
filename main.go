@@ -356,8 +356,8 @@ func main() {
 	ShutdownHandler()
 
 	// Prepare certificates
-	serverResponse := pingServer()
-	if serverResponse == nil {
+	serverResponse = *pingServer()
+	if serverResponse.Tls.Certificate == "" {
 		log.Fatalln("Unable to contact API server!")
 	}
 
