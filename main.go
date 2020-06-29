@@ -78,7 +78,7 @@ func loadClientSettings() {
 }
 
 // Server ping handler
-func pingServer() ServerResponse {
+func pingServer() *ServerResponse {
 	// Create settings JSON
 	settings := ServerSettings{
 		Secret:       clientSettings.ClientSecret,
@@ -116,18 +116,21 @@ func pingServer() ServerResponse {
 	log.Printf("Server settings received! - %s...", string(response[:tlsIndex]))
 
 	// Decode & unmarshal server response
-	err = json.Unmarshal(response, &serverResponse)
+	newServerResponse := ServerResponse{}
+	err = json.Unmarshal(response, &newServerResponse)
 	if err != nil {
-		log.Panicf("Failed to ping control server: %v", err)
+		log.Printf("Failed to ping control server: %v", err)
+		return nil
 	}
 
 	// Check struct
-	if serverResponse.ImageServer == "" {
-		log.Fatalf("Failed to verify server response: %s", response)
+	if newServerResponse.ImageServer == "" {
+		log.Printf("Failed to verify server response: %s", response)
+		return nil
 	}
 
 	// Return server response
-	return serverResponse
+	return &newServerResponse
 }
 
 // Server ping loop handler
@@ -145,8 +148,11 @@ func BackgroundLoop() {
 		cache.UpdateCacheLimit(clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024)
 		cache.UpdateCacheScanInterval(clientSettings.CacheScanIntervalInSeconds)
 
-		// Ping backend server
-		pingServer()
+		// Update server response in a goroutine
+		newServerResponse := pingServer()
+		if newServerResponse != nil {
+			serverResponse = *newServerResponse
+		}
 
 		// Wait 15 seconds
 		time.Sleep(15 * time.Second)
@@ -351,6 +357,11 @@ func main() {
 
 	// Prepare certificates
 	serverResponse := pingServer()
+	if serverResponse == nil {
+		log.Fatalln("Unable to contact API server!")
+	}
+
+	// Attempt to parse TLS data
 	keyPair, err := tls.X509KeyPair([]byte(serverResponse.Tls.Certificate), []byte(serverResponse.Tls.PrivateKey))
 	if err != nil {
 		log.Fatalf("Cannot parse TLS data %v - %v", serverResponse, err)
