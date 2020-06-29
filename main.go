@@ -93,14 +93,14 @@ func pingServer() *ServerResponse {
 	// Ping backend server
 	r, err := http.Post(apiBackend+"/ping", "application/json", bytes.NewBuffer(settingsJson))
 	if err != nil {
-		log.Panicf("Failed to ping control server: %v", err)
+		log.Printf("Failed to ping control server: %v", err)
 	}
 	defer r.Body.Close()
 
 	// Read response fully
 	response, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Panicf("Failed to ping control server: %v", err)
+		log.Printf("Failed to ping control server: %v", err)
 	}
 
 	// Print server settings out
