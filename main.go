@@ -94,6 +94,7 @@ func pingServer() *ServerResponse {
 	r, err := http.Post(apiBackend+"/ping", "application/json", bytes.NewBuffer(settingsJson))
 	if err != nil {
 		log.Printf("Failed to ping control server: %v", err)
+		return nil
 	}
 	defer r.Body.Close()
 
@@ -101,6 +102,7 @@ func pingServer() *ServerResponse {
 	response, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Failed to ping control server: %v", err)
+		return nil
 	}
 
 	// Print server settings out
@@ -112,6 +114,7 @@ func pingServer() *ServerResponse {
 		if serverResponse.Tls.Certificate == "" {
 			log.Fatalln("No valid TLS certificate found in memory, cannot continue!")
 		}
+		return nil
 	}
 	log.Printf("Server settings received! - %s...", string(response[:tlsIndex]))
 
