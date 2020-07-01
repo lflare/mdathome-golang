@@ -20,6 +20,18 @@ LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default: all
 
-all:
-	$(foreach GOOS, $(PLATFORMS),\
-	$(foreach GOARCH, $(ARCHITECTURES), $(shell export GOOS=$(GOOS); export GOARCH=$(GOARCH); go build -o build/$(BINARY)-$(GOOS)-$(GOARCH))))
+all: clean buildall
+
+clean:
+	rm -r build/ || exit 0
+
+buildall:
+	$(foreach GOOS, $(PLATFORMS), \
+	$(foreach GOARCH, $(ARCHITECTURES), \
+		$(eval EXT := $(if $(filter $(GOOS),windows), ".exe", "")) \
+		$(shell export GOOS=$(GOOS); \
+			    export GOARCH=$(GOARCH); \
+			    if [[ $(GOOS) == "windows" ]]; then \
+			        export EXT=.exe; \
+			    fi; \
+			    go build -o build/$(BINARY)-$(VERSION)-$(GOOS)-$(GOARCH)$(EXT))))
