@@ -1,1 +1,2 @@
-mdathome-golang
+# Ignore build directory
+build/
