@@ -352,6 +352,12 @@ func main() {
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 10
 	retryClient.Logger = nil
+
+	// Override default tranport to allow for keep-alives
+	transport := retryClient.HTTPClient.Transport.(*http.Transport)
+	retryClient.HTTPClient.Transport = overrideKeepAliveHttpTransport(transport)
+
+	// Create standard HTTP client from retryablehttp client
 	client = retryClient.StandardClient()
 	client.Timeout = time.Second * 15
 

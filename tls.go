@@ -12,6 +12,15 @@ type tcpKeepAliveListener struct {
 	*net.TCPListener
 }
 
+type keepAliveHttpTransport struct {
+	*http.Transport
+}
+func (c *keepAliveHttpTransport) CloseIdleConnections() {}
+
+func overrideKeepAliveHttpTransport(transport *http.Transport) *keepAliveHttpTransport {
+	return &keepAliveHttpTransport{transport}
+}
+
 func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	tc, err := ln.AcceptTCP()
 	if err != nil {
