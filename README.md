@@ -1,4 +1,5 @@
 # MangaDex@Home... in Golang!
+[![Total Downloads](https://img.shields.io/github/downloads/lflare/mdathome-golang/total)](https://github.com/lflare/mdathome-golang/releases)
 _Another unofficial client-rewrite by @lflare!_
 
 ## Disclaimer

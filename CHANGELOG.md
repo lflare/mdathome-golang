@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] Added official CHANGELOG.md file to keep track of changes from v1.0.0 release by [@lflare].
 - [2020-07-01] Simple Makefile to batch build for multiple architectures by [@lflare].
+- [2020-07-01] Added badge for linking to latest release on GitHub by [@lflare].
 
 ### Changed
 
