@@ -30,7 +30,8 @@ var clientSettings = ClientSettings{
 	MaxCacheSizeInMebibytes:    1024,     // Default 1GB
 	MaxReportedSizeInMebibytes: 1024,     // Default 1GB
 	GracefulShutdownInSeconds:  60,       // Default 60s graceful shutdown
-	CacheScanIntervalInSeconds: 60,       // Default 60s scan period
+	CacheScanIntervalInSeconds: 60,       // Default 60s scan interval
+	MaxCacheScanTimeInSeconds:  15,       // Default 15s max scan period
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
@@ -335,9 +336,12 @@ func main() {
 	loadClientSettings()
 
 	// Create cache
-	cache = diskcache.New(clientSettings.CacheDirectory,
+	cache = diskcache.New(
+		clientSettings.CacheDirectory,
 		clientSettings.MaxCacheSizeInMebibytes*1024*1024,
-		clientSettings.CacheScanIntervalInSeconds)
+		clientSettings.CacheScanIntervalInSeconds,
+		clientSettings.MaxCacheScanTimeInSeconds,
+	)
 	defer cache.Close()
 
 	// Prepare handlers

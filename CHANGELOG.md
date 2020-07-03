@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - [2020-07-01] Updated Makefile for proper Windows executable file extension by [@lflare].
+- [2020-07-03] Upgraded lflare/diskcache-golang to v0.2.2 by [@lflare].
 
 ### Deprecated
 
