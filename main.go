@@ -219,8 +219,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if image already in cache
-	if imageFromCache, ok := cache.Get(sanitized_url); !ok {
+	// Check if image already in cache or if cache-control is set
+	if imageFromCache, ok := cache.Get(sanitized_url); !ok || r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache miss
 		log.Printf("Request for %s - %s - %s missed cache", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
 		w.Header().Set("X-Cache", "MISS")
