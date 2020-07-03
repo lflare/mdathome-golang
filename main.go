@@ -27,10 +27,10 @@ var clientSettings = ClientSettings{
 	CacheDirectory:             "cache/", // Default cache directory
 	ClientPort:                 44300,    // Default client port
 	MaxKilobitsPerSecond:       10000,    // Default 10Mbps
-	MaxCacheSizeInMebibytes:    1024,     // Default 1GB
-	MaxReportedSizeInMebibytes: 1024,     // Default 1GB
-	GracefulShutdownInSeconds:  60,       // Default 60s graceful shutdown
-	CacheScanIntervalInSeconds: 60,       // Default 60s scan interval
+	MaxCacheSizeInMebibytes:    10240,    // Default 10GB
+	MaxReportedSizeInMebibytes: 10240,    // Default 10GB
+	GracefulShutdownInSeconds:  300,      // Default 5m graceful shutdown
+	CacheScanIntervalInSeconds: 300,      // Default 5m scan interval
 	MaxCacheScanTimeInSeconds:  15,       // Default 15s max scan period
 }
 var serverResponse ServerResponse

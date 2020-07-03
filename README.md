@@ -34,9 +34,9 @@ As with the official client, this client reads a configuration JSON file.
     "cache_directory": "./cache",
     "client_secret": "",
     "client_port": 44300,
+    "max_kilobits_per_second": 10000,
     "max_cache_size_in_mebibytes": 10000,
     "max_reported_size_in_mebibytes": 10000,
-    "max_kilobits_per_second": 50000,
     "graceful_shutdown_in_seconds": 300,
     "cache_scan_interval_in_seconds": 300,
     "max_cache_scan_time_in_seconds": 15
@@ -66,6 +66,9 @@ This setting controls how long to wait before giving up while shutting down grac
 
 ### `cache_scan_interval_in_seconds`
 This setting controls the interval in which the cache is scanned and automatically trimmed/evicted when size exceeds `max_cache_size_in_mebibytes`
+
+### `max_cache_scan_time_in_seconds`
+This setting controls how long the diskcache will take to scan through the database and filesystem for eviction purposes. After the specific set amount of time in seconds, the function just stops iterating and returns.
 
 ## License
 [AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
