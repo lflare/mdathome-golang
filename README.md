@@ -5,7 +5,21 @@ _Another unofficial client-rewrite by @lflare!_
 No support will be given with this unofficial rewrite. Feature recommendations are not welcomed, but pull requests with new features are. This fork was created entirely out of goodwill and boredom, and if the creator so decides, will not receive future support at any point in time.
 
 ## Installation
-In order to get this client working, you will need the basic client requirements stipulated by the official MDClient **and additionally, Python 3.8 and PIP**. With requirements fulfilled, you will need to install the libraries that this rewrite uses
+In order to get this client working, you will need the basic client requirements stipulated by the official MDClient. With that said, head on over to [the releases page](https://github.com/lflare/mdathome-golang/releases) to download a pre-compiled version for your operating system & architecture!
+
+### Running
+To run the client, ensure permissions are set correctly on your operating system, and run it like you would any other binary
+
+```bash
+$ ./mdathome_linux_amd64 
+2020-07-03T12:34:44+08:00 Failed to read client configuration file, creating anew: open settings.json: no such file or directory
+2020-07-03T12:34:44+08:00 Created sample settings.json! Please edit it before running again!
+```
+
+Do not worry, this is just the client creating a sample configuration, as it is not able to find one! Open up `settings.json` and edit your configuration as you see fit. Once your client secret is filled in, relaunch the client again in `tmux` or via `systemd` and let the manga flow!
+
+### Manual Compilation
+If you fancy yourself a hardcore masochist that likes to compile everything yourself manually, feel free to do so!
 
 ```bash
 root@af04d92d0b1e:/go# go get github.com/lflare/mdathome-golang
@@ -23,8 +37,9 @@ As with the official client, this client reads a configuration JSON file.
     "max_cache_size_in_mebibytes": 10000,
     "max_reported_size_in_mebibytes": 10000,
     "max_kilobits_per_second": 50000,
-    "graceful_shutdown_in_seconds": 180,
+    "graceful_shutdown_in_seconds": 300,
     "cache_scan_interval_in_seconds": 300,
+    "max_cache_scan_time_in_seconds": 15
 }
 ```
 
