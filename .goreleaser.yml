@@ -1,0 +1,61 @@
+project_name: mdathome
+dist: build
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+- 
+  binary: mdathome
+  env:
+  - CGO_ENABLED=0
+  - GO111MODULE=on
+  goos:
+  - darwin
+  - linux
+  - windows
+  - freebsd
+  goarch:
+  - amd64
+  - arm
+  - arm64
+  - s390x
+  - ppc64le
+  goarm:
+  - 5
+  - 6
+  - 7
+  ignore:
+    - goos: darwin
+      goarch: arm
+    - goos: darwin
+      goarch: ppc64le
+    - goos: darwin
+      goarch: s390x
+    - goos: windows
+      goarch: ppc64le
+    - goos: windows
+      goarch: s390x
+    - goos: freebsd
+      goarch: ppc64le
+    - goos: freebsd
+      goarch: s390x
+    - goos: freebsd
+      goarch: arm
+      goarm: 5
+  flags:
+  - -trimpath
+  ldflags:
+  - -s -w
+  hooks:
+    post:
+      - mv "{{.Path}}" "build/{{.ProjectName}}_{{.Target}}{{.Ext}}.tmp"
+      - rmdir "build/{{.ProjectName}}_{{.Target}}"
+      - mv "build/{{.ProjectName}}_{{.Target}}{{.Ext}}.tmp" "build/{{.ProjectName}}_{{.Target}}{{.Ext}}"
+
+archives:
+  - format: binary
+
+checksum:
+  algorithm: sha512
