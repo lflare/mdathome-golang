@@ -19,7 +19,7 @@ ARCHITECTURES=386 amd64 arm arm64
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default:
-	go build .
+	CGO_ENABLED=0 GO111MODULE=on go build -trimpath -ldflags '-s -w' .
 
 all:
 	goreleaser build --rm-dist --snapshot
