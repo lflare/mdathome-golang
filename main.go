@@ -308,7 +308,7 @@ func ShutdownHandler() {
 		// Wait till last request is normalised
 		timeShutdown := time.Now()
 		secondsSinceLastRequest := time.Now().Sub(timeLastRequest).Seconds()
-		for secondsSinceLastRequest < 15 {
+		for secondsSinceLastRequest < 30 {
 			log.Printf("%.2f seconds have elapsed since CTRL-C", secondsSinceLastRequest)
 
 			// Give up after one minute

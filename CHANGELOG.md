@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - [2020-07-03] Updated README.md with relevant up-to-date information by [@lflare].
 - [2020-07-03] Updated client defaults by [@lflare].
+- [2020-07-04] Changed graceful shutdown timer from 15 to 30 seconds by [@lflare].
 
 ### Deprecated
 
