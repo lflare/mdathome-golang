@@ -189,6 +189,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	sanitized_url := "/" + tokens["image_type"] + "/" + tokens["chapter_hash"] + "/" + tokens["image_filename"]
 
+	// Update last request
+	timeLastRequest = time.Now()
+
 	// Check if referer exists, else fake one
 	if r.Header.Get("Referer") == "" {
 		r.Header.Set("Referer", "None")
@@ -270,9 +273,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		imageReader := bytes.NewReader(image)
 		io.Copy(w, imageReader)
 	}
-
-	// Update last request
-	timeLastRequest = time.Now()
 
 	// End time
 	totalTime := time.Now().Sub(startTime).Milliseconds()
