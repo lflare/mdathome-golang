@@ -91,7 +91,7 @@ func pingServer() *ServerResponse {
 		Port:         clientSettings.ClientPort,
 		DiskSpace:    clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024, // 1GB
 		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       // 100Mbps
-		BuildVersion: 13,
+		BuildVersion: 15,
 		TlsCreatedAt: nil,
 	}
 	settingsJson, _ := json.Marshal(&settings)
