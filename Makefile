@@ -21,5 +21,8 @@ LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 default:
 	CGO_ENABLED=0 GO111MODULE=on go build -trimpath -ldflags '-s -w' .
 
-all:
+snapshot:
 	goreleaser build --rm-dist --snapshot
+
+all:
+	goreleaser build --rm-dist

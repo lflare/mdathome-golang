@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-05] Added rudimentary validation of request tokens by [@lflare].
 - [2020-07-05] Automatic update of client settings in the event of new fields by [@lflare].
+- [2020-07-05] Added version numbers to build artifacts by [@lflare].
 
 ### Changed
 - [2020-07-03] Updated README.md with relevant up-to-date information by [@lflare].

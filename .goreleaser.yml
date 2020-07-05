@@ -52,7 +52,7 @@ builds:
     post:
       - mv "{{.Path}}" "build/{{.ProjectName}}_{{.Target}}{{.Ext}}.tmp"
       - rmdir "build/{{.ProjectName}}_{{.Target}}"
-      - mv "build/{{.ProjectName}}_{{.Target}}{{.Ext}}.tmp" "build/{{.ProjectName}}_{{.Target}}{{.Ext}}"
+      - mv "build/{{.ProjectName}}_{{.Target}}{{.Ext}}.tmp" "build/{{.ProjectName}}_{{.Version}}_{{.Target}}{{.Ext}}"
 
 archives:
   - format: binary
