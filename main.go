@@ -257,7 +257,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create sanitized url if everything checks out
-	sanitized_url := "/" + tokens["image_type"] + "/" + tokens["chapter_hash"] + "/" + tokens["image_filename"]
+	sanitizedUrl := "/" + tokens["image_type"] + "/" + tokens["chapter_hash"] + "/" + tokens["image_filename"]
 
 	// Update last request
 	timeLastRequest = time.Now()
@@ -282,26 +282,26 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	// Log request
-	log.Printf("Request for %s - %s - %s received", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
+	log.Printf("Request for %s - %s - %s received", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"))
 
 	// Check if browser token exists
 	if r.Header.Get("If-Modified-Since") != "" {
 		// Log browser cache
-		log.Printf("Request for %s - %s - %s cached by browser", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
+		log.Printf("Request for %s - %s - %s cached by browser", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"))
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
 
 	// Check if image already in cache or if cache-control is set
-	if imageFromCache, ok := cache.Get(sanitized_url); !ok || r.Header.Get("Cache-Control") == "no-cache" {
+	if imageFromCache, ok := cache.Get(sanitizedUrl); !ok || r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache miss
-		log.Printf("Request for %s - %s - %s missed cache", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
+		log.Printf("Request for %s - %s - %s missed cache", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"))
 		w.Header().Set("X-Cache", "MISS")
 
 		// Send request
-		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitized_url)
+		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitizedUrl)
 		if err != nil {
-			log.Printf("Request for %s failed: %v", serverResponse.ImageServer + sanitized_url, err)
+			log.Printf("Request for %s failed: %v", serverResponse.ImageServer + sanitizedUrl, err)
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -313,14 +313,14 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		// Set timing header
 		processedTime := time.Now().Sub(startTime).Milliseconds()
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
-		log.Printf("Request for %s - %s - %s processed in %dms", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
+		log.Printf("Request for %s - %s - %s processed in %dms", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
 
 		// Copy request to response body
 		var imageBuffer bytes.Buffer
 		io.Copy(w, io.TeeReader(imageFromUpstream.Body, &imageBuffer))
 
 		// Save hash
-		cache.Set(sanitized_url, imageBuffer.Bytes())
+		cache.Set(sanitizedUrl, imageBuffer.Bytes())
 	} else {
 		// Get length
 		length := len(imageFromCache)
@@ -328,7 +328,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		copy(image, imageFromCache)
 
 		// Log cache hit
-		log.Printf("Request for %s - %s - %s hit cache", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"))
+		log.Printf("Request for %s - %s - %s hit cache", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"))
 		w.Header().Set("X-Cache", "HIT")
 
 		// Set Content-Length
@@ -337,7 +337,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		// Set timing header
 		processedTime := time.Now().Sub(startTime).Milliseconds()
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
-		log.Printf("Request for %s - %s - %s processed in %dms", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
+		log.Printf("Request for %s - %s - %s processed in %dms", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
 
 		// Convert bytes object into reader and send to client
 		imageReader := bytes.NewReader(image)
@@ -347,7 +347,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// End time
 	totalTime := time.Now().Sub(startTime).Milliseconds()
 	w.Header().Set("X-Time-Taken", strconv.Itoa(int(totalTime)))
-	log.Printf("Request for %s - %s - %s completed in %dms", sanitized_url, r.RemoteAddr, r.Header.Get("Referer"), totalTime)
+	log.Printf("Request for %s - %s - %s completed in %dms", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"), totalTime)
 }
 
 func ShutdownHandler() {
