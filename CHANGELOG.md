@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [v1.2.0] - 2020-07-05
+### Added
 - [2020-07-05] Added rudimentary validation of request tokens by [@lflare].
 - [2020-07-05] Automatic update of client settings in the event of new fields by [@lflare].
 
@@ -16,14 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [2020-07-04] Updated Makefile for single builds to produce static binaries by [@lflare].
 - [2020-07-05] Convert `sanitized_url` to `sanitizedUrl` for better cohesion by [@lflare].
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 - [2020-07-04] Reduced aborted requests due to faulty timer updating by [@lflare].
-
-### Security
 
 ## [v1.1.0] - 2020-07-03
 ### Added
@@ -41,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/lflare/mdathome-golang/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/lflare/mdathome-golang/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lflare/mdathome-golang/releases/tag/v1.0.0
