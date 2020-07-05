@@ -247,11 +247,12 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if token is valid and if we are rejecting invalid tokens
+	// Check if token is valid
 	err, code := VerifyToken(tokens["token"], tokens["chapter_hash"])
 	if err != nil {
 		log.Printf("Request for %s invalid - %v", r.URL.Path, err)
 
+		// Reject invalid tokens if we enabled it
 		if clientSettings.RejectInvalidTokens {
 			w.WriteHeader(code)
 			return
