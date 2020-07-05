@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,6 +21,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/lflare/diskcache-golang"
+	"golang.org/x/crypto/nacl/box"
 )
 
 // Global variables
@@ -32,6 +34,7 @@ var clientSettings = ClientSettings{
 	GracefulShutdownInSeconds:  300,      // Default 5m graceful shutdown
 	CacheScanIntervalInSeconds: 300,      // Default 5m scan interval
 	MaxCacheScanTimeInSeconds:  15,       // Default 15s max scan period
+	RejectInvalidTokens:        false,    // Default to not reject invalid tokens
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
@@ -163,6 +166,60 @@ func BackgroundLoop() {
 	}
 }
 
+func VerifyToken(tokenString string, chapterHash string) (error, int) {
+	// Check if given token string is empty
+	if tokenString == "" {
+		return fmt.Errorf("Token is empty!"), 403
+	}
+
+	// Decode base64-encoded token & key
+	tokenBytes, err := base64.RawURLEncoding.DecodeString(tokenString)
+	if err != nil {
+		return fmt.Errorf("Cannot decode token - %v", err), 403
+	}
+	keyBytes, err := base64.StdEncoding.DecodeString(serverResponse.TokenKey)
+	if err != nil {
+		return fmt.Errorf("Cannot decode key - %v", err), 403
+	}
+
+	// Copy over byte slices to fixed-length byte arrays for decryption
+	var nonce [24]byte
+	copy(nonce[:], tokenBytes[:24])
+	var key [32]byte
+	copy(key[:], keyBytes[:32])
+
+	// Decrypt token
+	data, ok := box.OpenAfterPrecomputation(nil, tokenBytes[24:], &nonce, &key)
+	if !ok {
+		return fmt.Errorf("Failed to decrypt token!"), 403
+	}
+
+	// Unmarshal to struct
+	token := Token{}
+	if err := json.Unmarshal(data, &token); err != nil {
+		return fmt.Errorf("Failed to unmarshal token - %v", err), 403
+	}
+
+	// Parse expiry time
+	expires, err := time.Parse(time.RFC3339, token.Expires)
+	if err != nil {
+		return fmt.Errorf("Failed to parse expiry from token - %v", err), 403
+	}
+
+	// Check token expiry timing
+	if time.Now().After(expires) {
+		return fmt.Errorf("Token has expired"), 403
+	}
+
+	// Check that chapter hashes are the same
+	if token.Hash != chapterHash {
+		return fmt.Errorf("Token hash invalid"), 410
+	}
+
+	// Token is valid
+	return nil, 0
+}
+
 // Image handler
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// Start timer
@@ -187,6 +244,19 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	// Check if token is valid and if we are rejecting invalid tokens
+	err, code := VerifyToken(tokens["token"], tokens["chapter_hash"])
+	if err != nil {
+		log.Printf("Request for %s invalid - %v", r.URL.Path, err)
+
+		if clientSettings.RejectInvalidTokens {
+			w.WriteHeader(code)
+			return
+		}
+	}
+
+	// Create sanitized url if everything checks out
 	sanitized_url := "/" + tokens["image_type"] + "/" + tokens["chapter_hash"] + "/" + tokens["image_filename"]
 
 	// Update last request
@@ -347,7 +417,7 @@ func main() {
 	// Prepare handlers
 	r := mux.NewRouter()
 	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", RequestHandler)
-	r.HandleFunc("/{request_token}/{image_type}/{chapter_hash}/{image_filename}", RequestHandler)
+	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", RequestHandler)
 
 	// Prepare server
 	http.Handle("/", r)

@@ -7,4 +7,5 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/go-retryablehttp v0.6.6
 	github.com/lflare/diskcache-golang v0.2.3
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 )

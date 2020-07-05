@@ -10,6 +10,7 @@ type ClientSettings struct {
 	GracefulShutdownInSeconds  int    `json:"graceful_shutdown_in_seconds"`
 	CacheScanIntervalInSeconds int    `json:"cache_scan_interval_in_seconds"`
 	MaxCacheScanTimeInSeconds  int    `json:"max_cache_scan_time_in_seconds"`
+	RejectInvalidTokens        bool   `json:"reject_invalid_tokens"`
 }
 
 type ServerRequest struct {
@@ -34,8 +35,14 @@ type TlsCert struct {
 type ServerResponse struct {
 	ImageServer string  `json:"image_server"`
 	Url         string  `json:"url"`
+	TokenKey 	string 	`json:"token_key"`
 	Paused      bool    `json:"paused"`
 	Compromised bool    `json:"compromised"`
 	LatestBuild int     `json:"latest_build"`
 	Tls         TlsCert `json:"tls"`
+}
+
+type Token struct {
+	Expires 	string 	`json:"expires"`
+	Hash 		string 	`json:"hash"`
 }
