@@ -171,7 +171,7 @@ func BackgroundLoop() {
 func VerifyToken(tokenString string, chapterHash string) (error, int) {
 	// Check if given token string is empty
 	if tokenString == "" {
-		return fmt.Errorf("Token is empty!"), 403
+		return fmt.Errorf("Token is empty"), 403
 	}
 
 	// Decode base64-encoded token & key
@@ -193,7 +193,7 @@ func VerifyToken(tokenString string, chapterHash string) (error, int) {
 	// Decrypt token
 	data, ok := box.OpenAfterPrecomputation(nil, tokenBytes[24:], &nonce, &key)
 	if !ok {
-		return fmt.Errorf("Failed to decrypt token!"), 403
+		return fmt.Errorf("Failed to decrypt token"), 403
 	}
 
 	// Unmarshal to struct
@@ -210,7 +210,7 @@ func VerifyToken(tokenString string, chapterHash string) (error, int) {
 
 	// Check token expiry timing
 	if time.Now().After(expires) {
-		return fmt.Errorf("Token has expired"), 403
+		return fmt.Errorf("Token expired"), 403
 	}
 
 	// Check that chapter hashes are the same
@@ -227,22 +227,27 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// Start timer
 	startTime := time.Now()
 
+	// Check if referer exists, else fake one
+	if r.Header.Get("Referer") == "" {
+		r.Header.Set("Referer", "None")
+	}
+
 	// Extract tokens
 	tokens := mux.Vars(r)
 
 	// Sanitized URL
 	if tokens["image_type"] != "data" && tokens["image_type"] != "data-saver" {
-		log.Printf("Request for %s failed", r.URL.Path)
+		log.Printf("Request for %s - %s - %s failed", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`^[0-9a-f]{32}$`, tokens["chapter_hash"]); !matched {
-		log.Printf("Request for %s failed", r.URL.Path)
+		log.Printf("Request for %s - %s - %s failed", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`[a-zA-Z0-9]{1,4}\.(jpg|jpeg|png|gif)$`, tokens["image_filename"]); !matched {
-		log.Printf("Request for %s failed", r.URL.Path)
+		log.Printf("Request for %s - %s - %s failed", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -264,11 +269,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Update last request
 	timeLastRequest = time.Now()
-
-	// Check if referer exists, else fake one
-	if r.Header.Get("Referer") == "" {
-		r.Header.Set("Referer", "None")
-	}
 
 	// Properly handle MangaDex's Referer
 	re := regexp.MustCompile(`https://mangadex.org/chapter/[0-9]+`)
