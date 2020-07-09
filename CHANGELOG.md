@@ -8,8 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- [2020-07-09] Increased WriteTimeout to 5 minutes to match token expiration timing by [@lflare].
-- [2020-07-09] Bumped version number to 16 to match 1.1.5 official build by [@lflare].
 
 ### Deprecated
 
@@ -18,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.2.1] - 2020-07-09
+### Changed
+- [2020-07-09] Increased WriteTimeout to 5 minutes to match token expiration timing by [@lflare].
+- [2020-07-09] Bumped version number to 16 to match 1.1.5 official build by [@lflare].
 
 ## [v1.2.0] - 2020-07-05
 ### Added
@@ -51,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/lflare/mdathome-golang/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/lflare/mdathome-golang/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/lflare/mdathome-golang/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lflare/mdathome-golang/releases/tag/v1.0.0
