@@ -25,6 +25,8 @@ import (
 )
 
 // Global variables
+var CLIENTVERSION = "v1.2.2"
+var SPECVERSION = 16
 var clientSettings = ClientSettings{
 	CacheDirectory:             "cache/", // Default cache directory
 	ClientPort:                 44300,    // Default client port
@@ -91,7 +93,7 @@ func pingServer() *ServerResponse {
 		Port:         clientSettings.ClientPort,
 		DiskSpace:    clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024, // 1GB
 		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       // 100Mbps
-		BuildVersion: 16,
+		BuildVersion: SPECVERSION,
 		TlsCreatedAt: nil,
 	}
 	settingsJson, _ := json.Marshal(&settings)
@@ -277,10 +279,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add server headers
+	serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", CLIENTVERSION, SPECVERSION)
 	w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
 	w.Header().Set("Access-Control-Expose-Headers", "*")
 	w.Header().Set("Cache-Control", "public, max-age=1209600")
-	w.Header().Set("Server", "MangaDex@Home - github.com/lflare/mdathome-golang")
+	w.Header().Set("Server", serverHeader)
 	w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 

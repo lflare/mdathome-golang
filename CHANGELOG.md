@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.2.2] - 2020-07-09
+### Changed
+- [2020-07-09] Add client spec version to Server header sent by client by [@lflare].
+
 ## [v1.2.1] - 2020-07-09
 ### Changed
 - [2020-07-09] Increased WriteTimeout to 5 minutes to match token expiration timing by [@lflare].
@@ -54,7 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/lflare/mdathome-golang/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/lflare/mdathome-golang/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/lflare/mdathome-golang/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/lflare/mdathome-golang/compare/v1.0.0...v1.1.0
