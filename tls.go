@@ -40,7 +40,7 @@ func ListenAndServeTLSKeyPair(addr string, cert tls.Certificate, handler http.Ha
 		Addr:         addr,
 		Handler:      handler,
 		ReadTimeout:  1 * time.Minute,
-		WriteTimeout: 1 * time.Minute,
+		WriteTimeout: 5 * time.Minute,
 	}
 	config := &tls.Config{
 		PreferServerCipherSuites: true,
