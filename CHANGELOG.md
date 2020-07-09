@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - [2020-07-09] Increased WriteTimeout to 5 minutes to match token expiration timing by [@lflare].
+- [2020-07-09] Bumped version number to 16 to match 1.1.5 official build by [@lflare].
 
 ### Deprecated
 
