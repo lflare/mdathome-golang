@@ -212,12 +212,12 @@ func VerifyToken(tokenString string, chapterHash string) (error, int) {
 
 	// Check token expiry timing
 	if time.Now().After(expires) {
-		return fmt.Errorf("Token expired"), 403
+		return fmt.Errorf("Token expired"), 410
 	}
 
 	// Check that chapter hashes are the same
 	if token.Hash != chapterHash {
-		return fmt.Errorf("Token hash invalid"), 410
+		return fmt.Errorf("Token hash invalid"), 403
 	}
 
 	// Token is valid
