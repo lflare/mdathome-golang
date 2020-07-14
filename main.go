@@ -298,8 +298,19 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if image already in cache or if cache-control is set
-	if imageFromCache, ok := cache.Get(sanitizedUrl); !ok || r.Header.Get("Cache-Control") == "no-cache" {
+	// Load cache
+	imageFromCache, ok := cache.Get(sanitizedUrl)
+
+	// Check if image is correct type if in cache
+	if ok {
+		contentType := http.DetectContentType(imageFromCache)
+		if !strings.Contains(contentType, "image") {
+			ok = false
+		}
+	}
+
+	// Check if image is alright and if cache-control is set
+	if !ok || r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache miss
 		log.Printf("Request for %s - %s - %s missed cache", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"))
 		w.Header().Set("X-Cache", "MISS")
@@ -312,6 +323,13 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer imageFromUpstream.Body.Close()
+
+		// If not 200
+		if imageFromUpstream.StatusCode != 200 {
+			log.Printf("Request for %s failed: %d", serverResponse.ImageServer + sanitizedUrl, imageFromUpstream.StatusCode)
+			w.WriteHeader(imageFromUpstream.StatusCode)
+			return
+		}
 
 		// Set Content-Length
 		w.Header().Set("Content-Length", imageFromUpstream.Header.Get("Content-Length"))
