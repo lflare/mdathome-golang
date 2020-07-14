@@ -306,7 +306,14 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Send request
 		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitizedUrl)
+		log.Println(imageFromUpstream.Status)
+		if imageFromUpstream.StatusCode != 200 {
+			log.Println("Upstream sent status code ", imageFromUpstream.StatusCode)
+			w.WriteHeader(imageFromUpstream.StatusCode)
+			return
+		}
 		if err != nil {
+			log.Println(err)
 			log.Printf("Request for %s failed: %v", serverResponse.ImageServer + sanitizedUrl, err)
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
@@ -330,6 +337,16 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Get length
 		length := len(imageFromCache)
+		//look for bad images.
+		contentType := http.DetectContentType(imageFromCache)
+		log.Println(contentType)
+		_, hash := diskcache.GetCacheKey(sanitized_url)
+		if !strings.Contains(contentType, "image") {
+			log.Println("wrong content type, deleting")
+			cache.DeleteFile(hash)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		image := make([]byte, length)
 		copy(image, imageFromCache)
 
