@@ -6,10 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2020-07-18] Added `make local` support for development builds by [@lflare].
 
 ### Changed
-- [2020-07-18] Properly refactored code to fit golangci-lint styles with advisory from @columna1 by [@lflare].
 
 ### Deprecated
 
@@ -18,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.2.4] - 2020-07-18
+### Added
+- [2020-07-18] Added `make local` support for development builds by [@lflare].
+
+### Changed
+- [2020-07-18] Properly refactored code to fit golangci-lint styles with advisory from @columna1 by [@lflare].
 
 ## [v1.2.3] - 2020-07-14
 ### Added
@@ -67,7 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.3...HEAD
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.4...HEAD
+[1.2.4]: https://github.com/lflare/mdathome-golang/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/lflare/mdathome-golang/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/lflare/mdathome-golang/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/lflare/mdathome-golang/compare/v1.2.0...v1.2.1
