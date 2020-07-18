@@ -20,17 +20,13 @@ ARCHITECTURES = 386 amd64 arm arm64
 
 LDFLAGS = -ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-default: network
-
-network:
+default:
 	export GO111MODULE=on
-	@$(MAKE) -f $(MAKEFILE) build
+	export CGO_ENABLED=0
+	go build -trimpath -ldflags '-s -w' .
 
 local:
 	export GO111MODULE=off
-	@$(MAKE) -f $(MAKEFILE) build
-
-build:
 	export CGO_ENABLED=0
 	go build -trimpath -ldflags '-s -w' .
 
