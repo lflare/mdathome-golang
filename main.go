@@ -81,6 +81,10 @@ func loadClientSettings() {
 		log.Fatalf("Empty secret! Cannot run!")
 	}
 
+	if clientSettings.CacheDirectory == "" {
+		log.Fatalf("Empty cache directory! Cannot run!")
+	}
+
 	// Print client configuration
 	log.Printf("Client configuration loaded: %+v", clientSettings)
 }
@@ -150,7 +154,7 @@ func BackgroundLoop() {
 	log.Println("Starting background jobs!")
 	time.Sleep(15 * time.Second)
 
-	for running == true {
+	for running {
 		// Reload client configuration
 		log.Println("Reloading client configuration")
 		loadClientSettings()
@@ -299,9 +303,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load cache
-	imageFromCache, ok := cache.Get(sanitizedUrl)
+	imageFromCache, err := cache.Get(sanitizedUrl)
 
 	// Check if image is correct type if in cache
+	ok := (err == nil)
 	if ok {
 		contentType := http.DetectContentType(imageFromCache)
 		if !strings.Contains(contentType, "image") {
@@ -309,7 +314,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Check if image is alright and if cache-control is set
+	// Check if image exists and is a proper image and if cache-control is set
 	if !ok || r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache miss
 		log.Printf("Request for %s - %s - %s missed cache", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"))
@@ -335,16 +340,25 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", imageFromUpstream.Header.Get("Content-Length"))
 
 		// Set timing header
-		processedTime := time.Now().Sub(startTime).Milliseconds()
+		processedTime := time.Since(startTime).Milliseconds()
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 		log.Printf("Request for %s - %s - %s processed in %dms", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
 
 		// Copy request to response body
 		var imageBuffer bytes.Buffer
-		io.Copy(w, io.TeeReader(imageFromUpstream.Body, &imageBuffer))
+		_, err = io.Copy(w, io.TeeReader(imageFromUpstream.Body, &imageBuffer))
+
+		// Check if image was streamed properly
+		if err != nil {
+			log.Printf("Request for %s failed: %v", serverResponse.ImageServer + sanitizedUrl, err)
+			return
+		}
 
 		// Save hash
-		cache.Set(sanitizedUrl, imageBuffer.Bytes())
+		err = cache.Set(sanitizedUrl, imageBuffer.Bytes())
+		if err != nil {
+			log.Printf("Unexpected error encountered when saving image to cache: %v", err)
+		}
 	} else {
 		// Get length
 		length := len(imageFromCache)
@@ -359,17 +373,23 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Length", strconv.Itoa(length))
 
 		// Set timing header
-		processedTime := time.Now().Sub(startTime).Milliseconds()
+		processedTime := time.Since(startTime).Milliseconds()
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 		log.Printf("Request for %s - %s - %s processed in %dms", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
 
 		// Convert bytes object into reader and send to client
 		imageReader := bytes.NewReader(image)
-		io.Copy(w, imageReader)
+		_, err := io.Copy(w, imageReader)
+
+		// Check if image was streamed properly
+		if err != nil {
+			log.Printf("Request for %s failed: %v", serverResponse.ImageServer + sanitizedUrl, err)
+			return
+		}
 	}
 
 	// End time
-	totalTime := time.Now().Sub(startTime).Milliseconds()
+	totalTime := time.Since(startTime).Milliseconds()
 	w.Header().Set("X-Time-Taken", strconv.Itoa(int(totalTime)))
 	log.Printf("Request for %s - %s - %s completed in %dms", sanitizedUrl, r.RemoteAddr, r.Header.Get("Referer"), totalTime)
 }
@@ -401,19 +421,19 @@ func ShutdownHandler() {
 
 		// Wait till last request is normalised
 		timeShutdown := time.Now()
-		secondsSinceLastRequest := time.Now().Sub(timeLastRequest).Seconds()
+		secondsSinceLastRequest := time.Since(timeLastRequest).Seconds()
 		for secondsSinceLastRequest < 30 {
 			log.Printf("%.2f seconds have elapsed since CTRL-C", secondsSinceLastRequest)
 
 			// Give up after one minute
-			if time.Now().Sub(timeShutdown).Seconds() > float64(clientSettings.GracefulShutdownInSeconds) {
+			if time.Since(timeShutdown).Seconds() > float64(clientSettings.GracefulShutdownInSeconds) {
 				log.Printf("Giving up, quitting now!")
 				break
 			}
 
 			// Count time :)
 			time.Sleep(1 * time.Second)
-			secondsSinceLastRequest = time.Now().Sub(timeLastRequest).Seconds()
+			secondsSinceLastRequest = time.Since(timeLastRequest).Seconds()
 		}
 
 		// Exit properly

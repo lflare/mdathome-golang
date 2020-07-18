@@ -23,7 +23,10 @@ func (p prefixWriter) Write(b []byte) (n int, err error) {
 
 func GetLogWriter() *os.File {
 	// Create log directory if it does not exist
-	os.MkdirAll("log", os.ModePerm)
+	err := os.MkdirAll("log", os.ModePerm)
+	if err != nil {
+		log.Fatalf("Failed to create log/ directory: %v", err)
+	}
 
 	// Open file handler and return file handler for defer
 	file, err := os.OpenFile("log/latest.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
