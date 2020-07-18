@@ -8,18 +8,31 @@ EXECUTABLES = git go find pwd
 K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH)))
 
-ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+MAKEFILE := $(lastword $(MAKEFILE_LIST))
 
-BINARY=mdathome-golang
-VERSION=`git describe --tag`
-BUILD=`git rev-parse HEAD`
-PLATFORMS=linux windows
-ARCHITECTURES=386 amd64 arm arm64
+BINARY = mdathome-golang
+VERSION = `git describe --tag`
+BUILD = `git rev-parse HEAD`
+PLATFORMS = linux windows
+ARCHITECTURES = 386 amd64 arm arm64
 
-LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
-default:
-	CGO_ENABLED=0 GO111MODULE=on go build -trimpath -ldflags '-s -w' .
+LDFLAGS = -ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
+
+default: network
+
+network:
+	export GO111MODULE=on
+	@$(MAKE) -f $(MAKEFILE) build
+
+local:
+	export GO111MODULE=off
+	@$(MAKE) -f $(MAKEFILE) build
+
+build:
+	export CGO_ENABLED=0
+	go build -trimpath -ldflags '-s -w' .
 
 snapshot:
 	goreleaser build --rm-dist --snapshot
