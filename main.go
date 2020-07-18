@@ -21,6 +21,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/lflare/diskcache-golang"
+	"github.com/tcnksm/go-latest"
 	"golang.org/x/crypto/nacl/box"
 )
 
@@ -441,10 +442,36 @@ func ShutdownHandler() {
 	}()
 }
 
+func checkClientVersion() {
+	// Prepare version check
+	githubTag := &latest.GithubTag{
+		Owner: "lflare",
+		Repository: "mdathome-golang",
+		FixVersionStrFunc: latest.DeleteFrontV(),
+	}
+
+	// Check if client is latest
+	res, err := latest.Check(githubTag, CLIENTVERSION)
+	if err != nil {
+		log.Printf("Failed to check client version %s? Proceed with caution!", CLIENTVERSION)
+	} else {
+		if res.Outdated {
+			log.Printf("Client %s is not the latest! You should update to the latest version %s now!", CLIENTVERSION, res.Current)
+			log.Printf("Client starting in 10 seconds...")
+			time.Sleep(10 * time.Second)
+		} else {
+			log.Printf("Client %s is latest! Starting client!", CLIENTVERSION)
+		}
+	}
+}
+
 func main() {
 	// Prepare logger
 	logWriter := GetLogWriter()
 	defer logWriter.Close()
+
+	// Check client version
+	checkClientVersion()
 
 	// Load client settings
 	loadClientSettings()
