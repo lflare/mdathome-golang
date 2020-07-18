@@ -95,8 +95,8 @@ func pingServer() *ServerResponse {
 	settings := ServerSettings{
 		Secret:       clientSettings.ClientSecret,
 		Port:         clientSettings.ClientPort,
-		DiskSpace:    clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024, // 1GB
-		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       // 100Mbps
+		DiskSpace:    clientSettings.MaxReportedSizeInMebibytes * 1024 * 1024, 	// 1GB
+		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       	// 100Mbps
 		BuildVersion: SPECVERSION,
 		TlsCreatedAt: nil,
 	}
