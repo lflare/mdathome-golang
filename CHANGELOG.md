@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-18] Added `make local` support for development builds by [@lflare].
 
+### Fixed
+- [2020-07-18] Dropped connections no longer save half-corrupted images to cache by [@lflare].
+
 ### Changed
 - [2020-07-18] Properly refactored code to fit golangci-lint styles with advisory from @columna1 by [@lflare].
 
