@@ -6,7 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2020-07-18] Added version checker by [@lflare].
 
 ### Changed
 
@@ -15,9 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
-- [2020-07-18] Fixed incorrect reported disk space to server for edge cases by [@lflare].
 
 ### Security
+
+## [v1.3.0] - 2020-07-19
+### Added
+- [2020-07-18] Added version checker by [@lflare].
+
+### Fixed
+- [2020-07-18] Fixed incorrect reported disk space to server for edge cases by [@lflare].
 
 ## [v1.2.4] - 2020-07-18
 ### Added
@@ -77,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.2.4...HEAD
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/lflare/mdathome-golang/compare/v1.2.4...v1.3.0
 [1.2.4]: https://github.com/lflare/mdathome-golang/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/lflare/mdathome-golang/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/lflare/mdathome-golang/compare/v1.2.1...v1.2.2
