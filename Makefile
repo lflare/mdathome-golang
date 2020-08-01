@@ -24,14 +24,18 @@ default:
 	export GO111MODULE=on
 	export CGO_ENABLED=0
 	go build -trimpath -ldflags '-s -w' .
+	upx mdathome-golang
 
 local:
 	export GO111MODULE=off
 	export CGO_ENABLED=0
 	go build -trimpath -ldflags '-s -w' .
+	upx mdathome-golang
 
 snapshot:
 	goreleaser build --rm-dist --snapshot
+	upx build/mdathome-*
 
 all:
 	goreleaser build --rm-dist
+	upx build/mdathome-*

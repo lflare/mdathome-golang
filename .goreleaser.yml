@@ -50,9 +50,9 @@ builds:
   - -s -w
   hooks:
     post:
-      - mv "{{.Path}}" "build/{{.ProjectName}}_{{.Target}}{{.Ext}}.tmp"
+      - mv "{{.Path}}" "build/{{.ProjectName}}-{{.Target}}{{.Ext}}.tmp"
       - rmdir "build/{{.ProjectName}}_{{.Target}}"
-      - mv "build/{{.ProjectName}}_{{.Target}}{{.Ext}}.tmp" "build/{{.ProjectName}}_{{.Version}}_{{.Target}}{{.Ext}}"
+      - mv "build/{{.ProjectName}}-{{.Target}}{{.Ext}}.tmp" "build/{{.ProjectName}}-{{.Version}}-{{.Target}}{{.Ext}}"
 
 archives:
   - format: binary
