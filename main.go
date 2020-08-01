@@ -253,7 +253,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if matched, _ := regexp.MatchString(`[a-zA-Z0-9]{1,4}\.(jpg|jpeg|png|gif)$`, tokens["image_filename"]); !matched {
+	if matched, _ := regexp.MatchString(`^.+\.(jpg|jpeg|png|gif)$`, tokens["image_filename"]); !matched {
 		log.Printf("Request for %s - %s - %s failed", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"))
 		w.WriteHeader(http.StatusBadRequest)
 		return
