@@ -15,6 +15,7 @@ type tcpKeepAliveListener struct {
 type keepAliveHttpTransport struct {
 	*http.Transport
 }
+
 func (c *keepAliveHttpTransport) CloseIdleConnections() {}
 
 func overrideKeepAliveHttpTransport(transport *http.Transport) *keepAliveHttpTransport {

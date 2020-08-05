@@ -445,8 +445,8 @@ func ShutdownHandler() {
 func checkClientVersion() {
 	// Prepare version check
 	githubTag := &latest.GithubTag{
-		Owner: "lflare",
-		Repository: "mdathome-golang",
+		Owner:             "lflare",
+		Repository:        "mdathome-golang",
 		FixVersionStrFunc: latest.DeleteFrontV(),
 	}
 
@@ -482,7 +482,7 @@ func main() {
 	// Create cache
 	cache = diskcache.New(
 		clientSettings.CacheDirectory,
-		clientSettings.MaxCacheSizeInMebibytes*1024*1024,
+		clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024,
 		clientSettings.CacheScanIntervalInSeconds,
 		clientSettings.MaxCacheScanTimeInSeconds,
 	)

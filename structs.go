@@ -35,7 +35,7 @@ type TlsCert struct {
 type ServerResponse struct {
 	ImageServer string  `json:"image_server"`
 	Url         string  `json:"url"`
-	TokenKey 	string 	`json:"token_key"`
+	TokenKey    string  `json:"token_key"`
 	Paused      bool    `json:"paused"`
 	Compromised bool    `json:"compromised"`
 	LatestBuild int     `json:"latest_build"`
@@ -43,6 +43,6 @@ type ServerResponse struct {
 }
 
 type Token struct {
-	Expires 	string 	`json:"expires"`
-	Hash 		string 	`json:"hash"`
+	Expires string `json:"expires"`
+	Hash    string `json:"hash"`
 }
