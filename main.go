@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/lflare/diskcache-golang"
 	"github.com/tcnksm/go-latest"
 	"golang.org/x/crypto/nacl/box"
@@ -496,18 +495,12 @@ func main() {
 	// Prepare server
 	http.Handle("/", r)
 
-	// Prepare client from retryablehttp
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 10
-	retryClient.Logger = nil
-
-	// Override default tranport to allow for keep-alives
-	transport := retryClient.HTTPClient.Transport.(*http.Transport)
-	retryClient.HTTPClient.Transport = overrideKeepAliveHttpTransport(transport)
-
-	// Create standard HTTP client from retryablehttp client
-	client = retryClient.StandardClient()
-	client.Timeout = time.Second * 15
+	// Create client
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    60 * time.Second,
+	}
+	client = &http.Client{Transport: tr}
 
 	// Register shutdown handler
 	ShutdownHandler()
