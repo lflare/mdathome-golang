@@ -25,7 +25,7 @@ import (
 )
 
 // Global variables
-var CLIENTVERSION = "v1.3.1"
+var CLIENTVERSION = "v1.3.2"
 var SPECVERSION = 16
 var clientSettings = ClientSettings{
 	CacheDirectory:             "cache/", // Default cache directory
