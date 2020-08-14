@@ -25,7 +25,7 @@ import (
 )
 
 const clientVersion string = "v1.3.2"
-const specVersion int = 16
+const specVersion int = 18
 
 var clientSettings = ClientSettings{
 	CacheDirectory:             "cache/", // Default cache directory
