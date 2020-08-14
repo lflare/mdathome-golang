@@ -6,11 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2020-08-14] Added `cache_refresh_age_in_seconds` configuration option to reduce cache update speeds for large caches by [@lflare].
 
 ### Changed
-- [2020-08-14] Updated to v0.5.0 of diskcache by [@lflare].
-- [2020-08-14] Massively refactored codebase by [@lflare].
 
 ### Deprecated
 
@@ -19,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.4.0] - 2020-08-14
+### Added
+- [2020-08-14] Added `cache_refresh_age_in_seconds` configuration option to reduce cache update speeds for large caches by [@lflare].
+
+### Changed
+- [2020-08-14] Updated to v0.5.0 of diskcache by [@lflare].
+- [2020-08-14] Massively refactored codebase by [@lflare].
 
 ## [v1.3.2] - 2020-08-09
 ### Changed

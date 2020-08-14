@@ -24,7 +24,7 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
-const clientVersion string = "v1.3.2"
+const clientVersion string = "v1.4.0"
 const specVersion int = 18
 
 var clientSettings = ClientSettings{
