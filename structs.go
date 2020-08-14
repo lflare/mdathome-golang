@@ -9,6 +9,7 @@ type ClientSettings struct {
 	MaxReportedSizeInMebibytes int    `json:"max_reported_size_in_mebibytes"`
 	GracefulShutdownInSeconds  int    `json:"graceful_shutdown_in_seconds"`
 	CacheScanIntervalInSeconds int    `json:"cache_scan_interval_in_seconds"`
+	CacheRefreshAgeInSeconds   int    `json:"cache_refresh_age_in_seconds"`
 	MaxCacheScanTimeInSeconds  int    `json:"max_cache_scan_time_in_seconds"`
 	RejectInvalidTokens        bool   `json:"reject_invalid_tokens"`
 }

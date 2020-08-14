@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- [2020-08-14] Added `cache_refresh_age_in_seconds` configuration option to reduce cache update speeds for large caches by [@lflare].
 
 ### Changed
+- [2020-08-14] Updated to v0.5.0 of diskcache by [@lflare].
 
 ### Deprecated
 

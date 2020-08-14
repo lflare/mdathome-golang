@@ -35,6 +35,7 @@ var clientSettings = ClientSettings{
 	MaxReportedSizeInMebibytes: 10240,    // Default 10GB
 	GracefulShutdownInSeconds:  300,      // Default 5m graceful shutdown
 	CacheScanIntervalInSeconds: 300,      // Default 5m scan interval
+	CacheRefreshAgeInSeconds:   3600,     // Default 1h cache refresh age
 	MaxCacheScanTimeInSeconds:  15,       // Default 15s max scan period
 	RejectInvalidTokens:        false,    // Default to not reject invalid tokens
 }
@@ -95,8 +96,8 @@ func pingServer() *ServerResponse {
 	settings := ServerSettings{
 		Secret:       clientSettings.ClientSecret,
 		Port:         clientSettings.ClientPort,
-		DiskSpace:    clientSettings.MaxReportedSizeInMebibytes * 1024 * 1024, 	// 1GB
-		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       	// 100Mbps
+		DiskSpace:    clientSettings.MaxReportedSizeInMebibytes * 1024 * 1024, // 1GB
+		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,          // 100Mbps
 		BuildVersion: SPECVERSION,
 		TlsCreatedAt: nil,
 	}
@@ -162,6 +163,7 @@ func BackgroundLoop() {
 		// Update max cache size
 		cache.UpdateCacheLimit(clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024)
 		cache.UpdateCacheScanInterval(clientSettings.CacheScanIntervalInSeconds)
+		cache.UpdateCacheRefreshAge(clientSettings.CacheRefreshAgeInSeconds)
 
 		// Update server response in a goroutine
 		newServerResponse := pingServer()
@@ -483,6 +485,7 @@ func main() {
 		clientSettings.CacheDirectory,
 		clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024,
 		clientSettings.CacheScanIntervalInSeconds,
+		clientSettings.CacheRefreshAgeInSeconds,
 		clientSettings.MaxCacheScanTimeInSeconds,
 	)
 	defer cache.Close()
@@ -497,8 +500,8 @@ func main() {
 
 	// Create client
 	tr := &http.Transport{
-		MaxIdleConns:       10,
-		IdleConnTimeout:    60 * time.Second,
+		MaxIdleConns:    10,
+		IdleConnTimeout: 60 * time.Second,
 	}
 	client = &http.Client{Transport: tr}
 
