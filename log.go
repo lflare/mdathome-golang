@@ -21,7 +21,7 @@ func (p prefixWriter) Write(b []byte) (n int, err error) {
 	return n + nn, err
 }
 
-func GetLogWriter() *os.File {
+func getLogWriter() *os.File {
 	// Create log directory if it does not exist
 	err := os.MkdirAll("log", os.ModePerm)
 	if err != nil {

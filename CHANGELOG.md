@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - [2020-08-14] Updated to v0.5.0 of diskcache by [@lflare].
+- [2020-08-14] Massively refactored codebase by [@lflare].
 
 ### Deprecated
 
