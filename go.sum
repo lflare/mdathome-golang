@@ -12,8 +12,8 @@ github.com/hashicorp/go-hclog v0.9.2/go.mod h1:5CU+agLiy3J7N7QjHK5d05KxGsuXiQLrj
 github.com/hashicorp/go-retryablehttp v0.6.6/go.mod h1:vAew36LZh98gCBJNLH42IQ1ER/9wtLZZ8meHqQvEYWY=
 github.com/hashicorp/go-version v1.2.1 h1:zEfKbn2+PDgroKdiOzqiE8rsmLqU2uwi5PB5pBJ3TkI=
 github.com/hashicorp/go-version v1.2.1/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09ZGVZPK5anwXA=
-github.com/lflare/diskcache-golang v0.5.0 h1:wygtSNlvIUJ73857zfhhCpTAQNOgIA3ykz3GF3UreCU=
-github.com/lflare/diskcache-golang v0.5.0/go.mod h1:8sJ74epS1SoDqLzFvEN/c5UbU20cl2G68mdIGApoqio=
+github.com/lflare/diskcache-golang v0.5.1 h1:kyi9Nwe5jkdo2AhfMMr1wTdjip100BHJcMFOtTOtiSA=
+github.com/lflare/diskcache-golang v0.5.1/go.mod h1:8sJ74epS1SoDqLzFvEN/c5UbU20cl2G68mdIGApoqio=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e h1:IWllFTiDjjLIf2oeKxpIUmtiDV5sn71VgeQgg6vcE7k=

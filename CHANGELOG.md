@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.4.1] - 2020-08-15
+### Changed
+- [2020-08-15] Updated to v0.5.1 of diskcache by [@lflare].
+
 ## [v1.4.0] - 2020-08-14
 ### Added
 - [2020-08-14] Added `cache_refresh_age_in_seconds` configuration option to reduce cache update speeds for large caches by [@lflare].
@@ -98,7 +102,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/lflare/mdathome-golang/compare/v1.4.0...v1.4.1
+[1.4.0]: https://github.com/lflare/mdathome-golang/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/lflare/mdathome-golang/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/lflare/mdathome-golang/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/lflare/mdathome-golang/compare/v1.2.4...v1.3.0
