@@ -1,4 +1,3 @@
-# Ignore build directory
+# Ignore build directory & single build artifact
 build/
 mdathome-golang
-

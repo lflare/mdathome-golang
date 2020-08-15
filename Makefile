@@ -21,15 +21,13 @@ ARCHITECTURES = 386 amd64 arm arm64
 LDFLAGS = -ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default:
-	export GO111MODULE=on
 	export CGO_ENABLED=0
-	go build -trimpath -ldflags '-s -w' .
+	go build -o ./mdathome-golang -trimpath -ldflags '-s -w' ./cmd/mdathome
 	upx mdathome-golang
 
 local:
-	export GO111MODULE=off
 	export CGO_ENABLED=0
-	go build -trimpath -ldflags '-s -w' .
+	go build -o ./mdathome-golang -trimpath -ldflags '-s -w' ./cmd/mdathome
 	upx mdathome-golang
 
 snapshot:

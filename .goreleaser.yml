@@ -8,6 +8,7 @@ before:
 builds:
 - 
   binary: mdathome
+  main: cmd/mdathome/main.go
   env:
   - CGO_ENABLED=0
   - GO111MODULE=on

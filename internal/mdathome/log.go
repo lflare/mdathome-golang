@@ -1,4 +1,4 @@
-package main
+package mdathome
 
 import (
 	"io"
@@ -21,7 +21,8 @@ func (p prefixWriter) Write(b []byte) (n int, err error) {
 	return n + nn, err
 }
 
-func getLogWriter() *os.File {
+// GetLogWriter returns a logging utility function
+func GetLogWriter() *os.File {
 	// Create log directory if it does not exist
 	err := os.MkdirAll("log", os.ModePerm)
 	if err != nil {

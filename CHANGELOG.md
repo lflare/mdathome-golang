@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.5.0] - 2020-08-15
+### Added
+- [2020-08-15] Added argument system by [@lflare].
+- [2020-08-15] Added `-shrink-database` argument flag to shrink overly huge cache.db files by [@lflare].
+
+### Changed
+- [2020-08-15] Massively refactored code and included diskcache-golang as an internal module by [@lflare].
+
 ## [v1.4.1] - 2020-08-15
 ### Changed
 - [2020-08-15] Updated to v0.5.1 of diskcache by [@lflare].
@@ -102,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/lflare/mdathome-golang/compare/v1.5.0...v1.5.0
 [1.4.1]: https://github.com/lflare/mdathome-golang/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/lflare/mdathome-golang/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/lflare/mdathome-golang/compare/v1.3.1...v1.3.2

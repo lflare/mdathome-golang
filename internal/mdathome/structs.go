@@ -1,4 +1,4 @@
-package main
+package mdathome
 
 // ClientSettings stores client settings
 type ClientSettings struct {

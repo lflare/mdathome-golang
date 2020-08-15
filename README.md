@@ -39,7 +39,9 @@ As with the official client, this client reads a configuration JSON file.
     "max_reported_size_in_mebibytes": 10000,
     "graceful_shutdown_in_seconds": 300,
     "cache_scan_interval_in_seconds": 300,
-    "max_cache_scan_time_in_seconds": 15
+    "cache_refresh_age_in_seconds": 3600,
+    "max_cache_scan_time_in_seconds": 15,
+    "reject_invalid_tokens": false
 }
 ```
 
@@ -50,7 +52,7 @@ Self-explanatory
 Self-explanatory, this should be obtained from the [MangaDex@Home page](https://mangadex.org/md_at_home).
 
 ### `client_port` - Recommended `44300`
-Self-explanatory, runs the client on the port you specify
+Self-explanatory, runs the client on the port you specify.
 
 ### `max_cache_size_in_mebibytes`
 This is the max cache size in mebibytes stored on your disk, do not exceed what is actually possibly storable on your drive.
@@ -62,13 +64,19 @@ This is the cache size reported to the backend server. This may cause your serve
 This setting currently only reports to the backend, and does not actually limit the speed client side.
 
 ### `graceful_shutdown_in_seconds`
-This setting controls how long to wait before giving up while shutting down gracefully
+This setting controls how long to wait before giving up while shutting down gracefully.
 
 ### `cache_scan_interval_in_seconds`
-This setting controls the interval in which the cache is scanned and automatically trimmed/evicted when size exceeds `max_cache_size_in_mebibytes`
+This setting controls the interval in which the cache is scanned and automatically trimmed/evicted when size exceeds `max_cache_size_in_mebibytes`.
+
+### `cache_refresh_age_in_seconds`
+This setting controls the maximum age allowed for a cache entry before being refreshed. Larger caches may find it more performant to set it to a greater time interval (e.g. 1 day or 1 week).
 
 ### `max_cache_scan_time_in_seconds`
 This setting controls how long the diskcache will take to scan through the database and filesystem for eviction purposes. After the specific set amount of time in seconds, the function just stops iterating and returns.
+
+### `reject_invalid_tokens`
+This setting controls if the cache server should reject all requests with missing or invalid security tokens.
 
 ## License
 [AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
