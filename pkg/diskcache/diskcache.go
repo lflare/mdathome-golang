@@ -54,7 +54,7 @@ func (c *Cache) Get(key string) (resp []byte, err error) {
 	// Attempt to get keyPair
 	keyPair, err := c.getEntry(key)
 	if err != nil {
-		log.Printf("Failed to get entry for cache key %s: %v", key, err)
+		err = fmt.Errorf("Failed to get entry for cache key %s: %v", key, err)
 		return nil, err
 	}
 

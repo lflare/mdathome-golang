@@ -58,7 +58,7 @@ func (c *Cache) getEntry(key string) (KeyPair, error) {
 		// Retrieve key value
 		keyPairBytes := tx.Bucket([]byte("KEYS")).Get([]byte(key))
 		if keyPairBytes == nil {
-			return fmt.Errorf("Could not retrieve entry")
+			return fmt.Errorf("Key does not exist")
 		}
 
 		// Unmarshal keyPairBytes into previously declared keyPair

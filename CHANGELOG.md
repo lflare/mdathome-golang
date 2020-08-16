@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.5.1] - 2020-08-16
+### Fixed
+- [2020-08-16] Fixed fatalistic logging for cache miss by [@lflare].
+
 ## [v1.5.0] - 2020-08-15
 ### Added
 - [2020-08-15] Added argument system by [@lflare].
@@ -110,17 +114,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2020-07-01] First stable unofficial client public release by [@lflare]
 
-[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.5.0...HEAD
-[1.5.0]: https://github.com/lflare/mdathome-golang/compare/v1.5.0...v1.5.0
-[1.4.1]: https://github.com/lflare/mdathome-golang/compare/v1.4.0...v1.4.1
-[1.4.0]: https://github.com/lflare/mdathome-golang/compare/v1.3.2...v1.4.0
-[1.3.2]: https://github.com/lflare/mdathome-golang/compare/v1.3.1...v1.3.2
-[1.3.1]: https://github.com/lflare/mdathome-golang/compare/v1.3.0...v1.3.1
-[1.3.0]: https://github.com/lflare/mdathome-golang/compare/v1.2.4...v1.3.0
-[1.2.4]: https://github.com/lflare/mdathome-golang/compare/v1.2.3...v1.2.4
-[1.2.3]: https://github.com/lflare/mdathome-golang/compare/v1.2.2...v1.2.3
-[1.2.2]: https://github.com/lflare/mdathome-golang/compare/v1.2.1...v1.2.2
-[1.2.1]: https://github.com/lflare/mdathome-golang/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/lflare/mdathome-golang/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/lflare/mdathome-golang/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/lflare/mdathome-golang/releases/tag/v1.0.0
+[Unreleased]: https://github.com/lflare/mdathome-golang/compare/v1.5.1...HEAD
+[v1.5.1]: https://github.com/lflare/mdathome-golang/compare/v1.5.0...v1.5.1
+[v1.5.0]: https://github.com/lflare/mdathome-golang/compare/v1.4.1...v1.5.0
+[v1.4.1]: https://github.com/lflare/mdathome-golang/compare/v1.4.0...v1.4.1
+[v1.4.0]: https://github.com/lflare/mdathome-golang/compare/v1.3.2...v1.4.0
+[v1.3.2]: https://github.com/lflare/mdathome-golang/compare/v1.3.1...v1.3.2
+[v1.3.1]: https://github.com/lflare/mdathome-golang/compare/v1.3.0...v1.3.1
+[v1.3.0]: https://github.com/lflare/mdathome-golang/compare/v1.2.4...v1.3.0
+[v1.2.4]: https://github.com/lflare/mdathome-golang/compare/v1.2.3...v1.2.4
+[v1.2.3]: https://github.com/lflare/mdathome-golang/compare/v1.2.2...v1.2.3
+[v1.2.2]: https://github.com/lflare/mdathome-golang/compare/v1.2.1...v1.2.2
+[v1.2.1]: https://github.com/lflare/mdathome-golang/compare/v1.2.0...v1.2.1
+[v1.2.0]: https://github.com/lflare/mdathome-golang/compare/v1.1.0...v1.2.0
+[v1.1.0]: https://github.com/lflare/mdathome-golang/compare/v1.0.0...v1.1.0
+[v1.0.0]: https://github.com/lflare/mdathome-golang/releases/tag/v1.0.0
