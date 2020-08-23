@@ -2,6 +2,7 @@ package mdathome
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -27,6 +28,7 @@ var clientSettings = ClientSettings{
 	CacheRefreshAgeInSeconds:   3600,     // Default 1h cache refresh age
 	MaxCacheScanTimeInSeconds:  15,       // Default 15s max scan period
 	RejectInvalidTokens:        false,    // Default to not reject invalid tokens
+	VerifyImageIntegrity:       false,    // Default to not verify image integrity
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
@@ -110,12 +112,31 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Load cache
 	imageFromCache, err := cache.Get(sanitizedURL)
 
-	// Check if image is correct type if in cache
+	// Check image integrity if found in cache
 	ok := (err == nil)
 	if ok {
+		// Check image content type
 		contentType := http.DetectContentType(imageFromCache)
 		if !strings.Contains(contentType, "image") {
 			ok = false
+		}
+
+		// Check SHA256 hash if exists in URL (might be computationally heavy)
+		if clientSettings.VerifyImageIntegrity {
+			subTokens := strings.Split(tokens["image_filename"], "-")
+			if len(subTokens) == 2 {
+				// Check given hash length
+				givenHash := strings.Split(subTokens[1], ".")[0]
+				if len(givenHash) == 64 {
+					// Calculate hash
+					calculatedHash := fmt.Sprintf("%x", sha256.Sum256(imageFromCache))
+
+					// Compare hash
+					if givenHash != calculatedHash {
+						ok = false
+					}
+				}
+			}
 		}
 	}
 

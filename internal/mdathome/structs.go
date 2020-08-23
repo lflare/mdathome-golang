@@ -13,6 +13,7 @@ type ClientSettings struct {
 	CacheRefreshAgeInSeconds   int    `json:"cache_refresh_age_in_seconds"`
 	MaxCacheScanTimeInSeconds  int    `json:"max_cache_scan_time_in_seconds"`
 	RejectInvalidTokens        bool   `json:"reject_invalid_tokens"`
+	VerifyImageIntegrity       bool   `json:"verify_image_integrity"`
 }
 
 // ServerRequest stores a single `secret` field for miscellanous operations
