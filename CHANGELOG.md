@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [2020-08-23] Added some form of image integrity check via use of SHA256 checksums provided by upstream by [@lflare].
 
 ### Changed
+- [2020-09-08] Bumped client version up to 19 by [@lflare].
 
 ### Deprecated
 
