@@ -20,6 +20,7 @@ import (
 var clientSettings = ClientSettings{
 	CacheDirectory:             "cache/", // Default cache directory
 	ClientPort:                 44300,    // Default client port
+	AllowHTTP2:                 true,     // Allow HTTP2 by default
 	MaxKilobitsPerSecond:       10000,    // Default 10Mbps
 	MaxCacheSizeInMebibytes:    10240,    // Default 10GB
 	MaxReportedSizeInMebibytes: 10240,    // Default 10GB
@@ -287,7 +288,7 @@ func StartServer() {
 	http.Handle("/", r)
 
 	// Start proxy server
-	err = listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), keyPair, r)
+	err = listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, keyPair, r)
 	if err != nil {
 		log.Fatalf("Cannot start server: %v", err)
 	}

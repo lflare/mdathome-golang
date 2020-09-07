@@ -5,6 +5,7 @@ type ClientSettings struct {
 	CacheDirectory             string `json:"cache_directory"`
 	ClientSecret               string `json:"client_secret"`
 	ClientPort                 int    `json:"client_port"`
+	AllowHTTP2                 bool   `json:"allow_http2"`
 	MaxKilobitsPerSecond       int    `json:"max_kilobits_per_second"`
 	MaxCacheSizeInMebibytes    int    `json:"max_cache_size_in_mebibytes"`
 	MaxReportedSizeInMebibytes int    `json:"max_reported_size_in_mebibytes"`

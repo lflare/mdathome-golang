@@ -31,7 +31,7 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	return tc, nil
 }
 
-func listenAndServeTLSKeyPair(addr string, cert tls.Certificate, handler http.Handler) error {
+func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate, handler http.Handler) error {
 	if addr == "" {
 		return errors.New("Invalid address string")
 	}
@@ -49,9 +49,14 @@ func listenAndServeTLSKeyPair(addr string, cert tls.Certificate, handler http.Ha
 			tls.X25519,
 		},
 	}
-	config.NextProtos = []string{"h2", "http/1.1"}
 	config.Certificates = make([]tls.Certificate, 1)
 	config.Certificates[0] = cert
+
+	if allowHTTP2 {
+		config.NextProtos = []string{"h2", "http/1.1"}
+	} else {
+		config.NextProtos = []string{"http/1.1"}
+	}
 
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {

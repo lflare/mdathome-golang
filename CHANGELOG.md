@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- [2020-09-08] Added client configuration of optional HTTP2 by [@lflare].
 - [2020-08-23] Added some form of image integrity check via use of SHA256 checksums provided by upstream by [@lflare].
 
 ### Changed
