@@ -1,4 +1,4 @@
-package diskcache
+package boltdb
 
 import (
 	"crypto/md5"
@@ -10,10 +10,23 @@ import (
 	"os"
 	"sort"
 	"time"
+
+	"github.com/boltdb/bolt"
+	"github.com/lflare/mdathome-golang/pkg/cache"
 )
 
+// BoltCache is a struct that represents a cache object
+type BoltCache struct {
+	directory         string
+	cacheLimit        int
+	cacheScanInterval int
+	cacheRefreshAge   int
+	maxCacheScanTime  int
+	database          *bolt.DB
+}
+
 // DeleteFile takes an absolute path to a file and deletes it
-func (c *Cache) DeleteFile(file string) error {
+func (c *BoltCache) DeleteFile(file string) error {
 	dir, file := file[0:2]+"/"+file[2:4]+"/"+file[4:6], file
 
 	// Delete file off disk
@@ -35,7 +48,7 @@ func (c *Cache) DeleteFile(file string) error {
 }
 
 // Get takes a key, hashes it, and returns the corresponding file in the directory
-func (c *Cache) Get(key string) (resp []byte, err error) {
+func (c *BoltCache) Get(key string) (resp []byte, err error) {
 	// Check for empty cache key
 	if len(key) == 0 {
 		return nil, fmt.Errorf("Empty cache key")
@@ -64,7 +77,7 @@ func (c *Cache) Get(key string) (resp []byte, err error) {
 		if err != nil {
 			size := len(file)
 			timestamp := time.Now().Unix()
-			keyPair = KeyPair{key, timestamp, size}
+			keyPair = cache.KeyPair{Key: key, Timestamp: timestamp, Size: size}
 		}
 
 		// Update timestamp
@@ -83,7 +96,7 @@ func (c *Cache) Get(key string) (resp []byte, err error) {
 }
 
 // Set takes a key, hashes it, and saves the `resp` bytearray into the corresponding file
-func (c *Cache) Set(key string, resp []byte) error {
+func (c *BoltCache) Set(key string, resp []byte) error {
 	// Check for empty cache key
 	if len(key) == 0 {
 		return fmt.Errorf("Empty cache key")
@@ -109,7 +122,7 @@ func (c *Cache) Set(key string, resp []byte) error {
 	// Update database
 	size := len(resp)
 	timestamp := time.Now().Unix()
-	keyPair := KeyPair{key, timestamp, size}
+	keyPair := cache.KeyPair{key, timestamp, size}
 
 	// Set database entry
 	err = c.setEntry(keyPair)
@@ -123,23 +136,23 @@ func (c *Cache) Set(key string, resp []byte) error {
 }
 
 // UpdateCacheLimit allows for updating of cache limit=
-func (c *Cache) UpdateCacheLimit(cacheLimit int) {
+func (c *BoltCache) UpdateCacheLimit(cacheLimit int) {
 	c.cacheLimit = cacheLimit
 }
 
 // UpdateCacheScanInterval allows for updating of cache scanning interval
-func (c *Cache) UpdateCacheScanInterval(cacheScanInterval int) {
+func (c *BoltCache) UpdateCacheScanInterval(cacheScanInterval int) {
 	c.cacheScanInterval = cacheScanInterval
 }
 
 // UpdateCacheRefreshAge allows for updating of cache refresh age
-func (c *Cache) UpdateCacheRefreshAge(cacheRefreshAge int) {
+func (c *BoltCache) UpdateCacheRefreshAge(cacheRefreshAge int) {
 	c.cacheRefreshAge = cacheRefreshAge
 }
 
 // StartBackgroundThread starts a background thread that automatically scans the directory and removes older files
 // when cache exceeds size limits
-func (c *Cache) StartBackgroundThread() {
+func (c *BoltCache) StartBackgroundThread() {
 	for {
 		// Retrieve cache information
 		size, keys, err := c.loadCacheInfo()
@@ -148,12 +161,12 @@ func (c *Cache) StartBackgroundThread() {
 		}
 
 		// Log
-		log.Printf("Current diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
+		log.Printf("Current diskcache size: %s, limit: %s", cache.ByteCountIEC(size), cache.ByteCountIEC(c.cacheLimit))
 
 		// If size is bigger than configured byte limit, keep deleting last recently used files
 		if size > c.cacheLimit {
 			// Get ready to shrink cache
-			log.Printf("Shrinking diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
+			log.Printf("Shrinking diskcache size: %s, limit: %s", cache.ByteCountIEC(size), cache.ByteCountIEC(c.cacheLimit))
 			deletedSize := 0
 			deletedItems := 0
 
@@ -185,7 +198,7 @@ func (c *Cache) StartBackgroundThread() {
 			}
 
 			// Log success
-			log.Printf("Successfully shrunk diskcache by: %s, %d items", ByteCountIEC(deletedSize), deletedItems)
+			log.Printf("Successfully shrunk diskcache by: %s, %d items", cache.ByteCountIEC(deletedSize), deletedItems)
 		}
 
 		// Sleep till next execution
@@ -194,7 +207,7 @@ func (c *Cache) StartBackgroundThread() {
 }
 
 // loadCacheInfo
-func (c *Cache) loadCacheInfo() (int, []KeyPair, error) {
+func (c *BoltCache) loadCacheInfo() (int, []cache.KeyPair, error) {
 	// Create running variables
 	totalSize := 0
 
@@ -210,14 +223,14 @@ func (c *Cache) loadCacheInfo() (int, []KeyPair, error) {
 	}
 
 	// Sort cache by access time
-	sort.Sort(ByTimestamp(keyPairs))
+	sort.Sort(cache.ByTimestamp(keyPairs))
 
 	// Return running variables
 	return totalSize, keyPairs, err
 }
 
 // Close closes the database
-func (c *Cache) Close() {
+func (c *BoltCache) Close() {
 	c.database.Close()
 }
 
@@ -236,8 +249,8 @@ func getCacheKey(key string) (string, string) {
 }
 
 // New returns a new Cache that will store files in basePath
-func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAge int, maxCacheScanTime int) *Cache {
-	cache := Cache{
+func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAge int, maxCacheScanTime int) *BoltCache {
+	cache := BoltCache{
 		directory:         directory,
 		cacheLimit:        cacheLimit,
 		cacheScanInterval: cacheScanInterval,

@@ -1,4 +1,4 @@
-package diskcache
+package boltdb
 
 import (
 	"encoding/json"
@@ -10,10 +10,11 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
+	"github.com/lflare/mdathome-golang/pkg/cache"
 )
 
 // setEntry adds or modifies an entry in the database from a keyPair
-func (c *Cache) setEntry(keyPair KeyPair) error {
+func (c *BoltCache) setEntry(keyPair cache.KeyPair) error {
 	// Marshal keyPair struct into bytes
 	keyPairBytes, err := json.Marshal(keyPair)
 	if err != nil {
@@ -34,7 +35,7 @@ func (c *Cache) setEntry(keyPair KeyPair) error {
 }
 
 // deleteEntry deletes an entry from database from a key
-func (c *Cache) deleteEntry(key string) error {
+func (c *BoltCache) deleteEntry(key string) error {
 	// Update database and delete entry
 	err := c.database.Update(func(tx *bolt.Tx) error {
 		err := tx.Bucket([]byte("KEYS")).Delete([]byte(key))
@@ -49,9 +50,9 @@ func (c *Cache) deleteEntry(key string) error {
 }
 
 // getEntry retrieves an entry from the database from a key
-func (c *Cache) getEntry(key string) (KeyPair, error) {
+func (c *BoltCache) getEntry(key string) (cache.KeyPair, error) {
 	// Prepare empty keyPair variable
-	var keyPair KeyPair
+	var keyPair cache.KeyPair
 
 	// Retrieve entry from database
 	err := c.database.View(func(tx *bolt.Tx) error {
@@ -62,7 +63,7 @@ func (c *Cache) getEntry(key string) (KeyPair, error) {
 		}
 
 		// Unmarshal keyPairBytes into previously declared keyPair
-		err := json.Unmarshal(keyPairBytes, &keyPair)
+		err := keyPair.FromJSON(keyPairBytes)
 		if err != nil {
 			return err
 		}
@@ -75,9 +76,9 @@ func (c *Cache) getEntry(key string) (KeyPair, error) {
 }
 
 // getAllKeys returns a full slice of keyPairs from the database
-func (c *Cache) getAllKeys() ([]KeyPair, error) {
+func (c *BoltCache) getAllKeys() ([]cache.KeyPair, error) {
 	// Prepare empty keyPairs reference
-	var keyPairs []KeyPair
+	var keyPairs []cache.KeyPair
 
 	// Retrieve all entries from database, unmarshaling and appending to []keyPair slice
 	err := c.database.View(func(tx *bolt.Tx) error {
@@ -85,7 +86,7 @@ func (c *Cache) getAllKeys() ([]KeyPair, error) {
 		b := tx.Bucket([]byte("KEYS"))
 
 		// Create slice of keypairs of size of bucket
-		keyPairs = make([]KeyPair, b.Stats().KeyN)
+		keyPairs = make([]cache.KeyPair, b.Stats().KeyN)
 		index := 0
 
 		// Prepare timer
@@ -95,10 +96,10 @@ func (c *Cache) getAllKeys() ([]KeyPair, error) {
 		cur := b.Cursor()
 		for key, keyPairBytes := cur.First(); key != nil; key, keyPairBytes = cur.Next() {
 			// Prepare empty keyPair struct
-			var keyPair KeyPair
+			var keyPair cache.KeyPair
 
 			// Unmarshal bytes
-			err := json.Unmarshal(keyPairBytes, &keyPair)
+			err := keyPair.FromJSON(keyPairBytes)
 			if err != nil {
 				return err
 			}
@@ -121,7 +122,7 @@ func (c *Cache) getAllKeys() ([]KeyPair, error) {
 }
 
 // ShrinkDatabase manually re-creates the cache.db file and effectively shrinks it
-func (c *Cache) ShrinkDatabase() error {
+func (c *BoltCache) ShrinkDatabase() error {
 	// Hook on to SIGTERM
 	sigtermChannel := make(chan os.Signal)
 	signal.Notify(sigtermChannel, os.Interrupt, syscall.SIGTERM)
@@ -164,7 +165,7 @@ func (c *Cache) ShrinkDatabase() error {
 	return nil
 }
 
-func (c *Cache) openDB() error {
+func (c *BoltCache) openDB() error {
 	// Open BoltDB database
 	options := c.getOptions()
 	database, err := bolt.Open(c.directory+"/cache.db", 0600, options)
@@ -178,7 +179,7 @@ func (c *Cache) openDB() error {
 }
 
 // setupDB initialises the BoltDB database
-func (c *Cache) setupDB() error {
+func (c *BoltCache) setupDB() error {
 	// Create cache directory if not exists
 	err := os.MkdirAll(c.directory, os.ModePerm)
 	if err != nil {
