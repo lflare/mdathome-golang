@@ -1,4 +1,4 @@
-package diskcache
+package boltdb
 
 import (
 	"log"

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/lflare/mdathome-golang/pkg/diskcache"
+	"github.com/lflare/mdathome-golang/pkg/cache/boltdb"
 )
 
 var clientSettings = ClientSettings{
@@ -32,7 +32,7 @@ var clientSettings = ClientSettings{
 	VerifyImageIntegrity:       false,    // Default to not verify image integrity
 }
 var serverResponse ServerResponse
-var cache *diskcache.Cache
+var cache *boltdb.BoltCache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
@@ -227,9 +227,9 @@ func ShrinkDatabase() {
 	loadClientSettings()
 	saveClientSettings()
 
-	// Prepare diskcache
+	// Prepare boltdb
 	log.Println("Preparing database...")
-	cache = diskcache.New(clientSettings.CacheDirectory, 0, 0, 0, 0)
+	cache = boltdb.New(clientSettings.CacheDirectory, 0, 0, 0, 0)
 	defer cache.Close()
 
 	// Attempts to start cache shrinking
@@ -246,8 +246,8 @@ func StartServer() {
 	loadClientSettings()
 	saveClientSettings()
 
-	// Prepare diskcache
-	cache = diskcache.New(
+	// Prepare boltdb
+	cache = boltdb.New(
 		clientSettings.CacheDirectory,
 		clientSettings.MaxCacheSizeInMebibytes*1024*1024,
 		clientSettings.CacheScanIntervalInSeconds,
