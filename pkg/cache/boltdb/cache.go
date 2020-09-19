@@ -122,7 +122,7 @@ func (c *BoltCache) Set(key string, resp []byte) error {
 	// Update database
 	size := len(resp)
 	timestamp := time.Now().Unix()
-	keyPair := cache.KeyPair{key, timestamp, size}
+	keyPair := cache.KeyPair{Key: key, Timestamp: timestamp, Size: size}
 
 	// Set database entry
 	err = c.setEntry(keyPair)
