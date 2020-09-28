@@ -54,14 +54,17 @@ Self-explanatory, this should be obtained from the [MangaDex@Home page](https://
 ### `client_port` - Recommended `44300`
 Self-explanatory, runs the client on the port you specify.
 
+### `allow_http2` - Recommended `yes`
+Self-explanatory, allows non-traditional HTTP2 on your MD@H client!
+
+### `max_kilobits_per_second`
+This setting currently only reports to the backend, and does not actually limit the speed client side.
+
 ### `max_cache_size_in_mebibytes`
 This is the max cache size in mebibytes stored on your disk, do not exceed what is actually possibly storable on your drive.
 
 ### `max_reported_size_in_mebibytes`
 This is the cache size reported to the backend server. This may cause your server to get more shards, but due to the nature of how this will work, setting this variable too high will cause too much file "swapping". It is **highly** recommended that you set this variable the same as `max_cache_size_in_mebibytes`.
-
-### `max_kilobits_per_second`
-This setting currently only reports to the backend, and does not actually limit the speed client side.
 
 ### `graceful_shutdown_in_seconds`
 This setting controls how long to wait before giving up while shutting down gracefully.
@@ -77,6 +80,9 @@ This setting controls how long the diskcache will take to scan through the datab
 
 ### `reject_invalid_tokens`
 This setting controls if the cache server should reject all requests with missing or invalid security tokens.
+
+### `verify_image_integrity`
+This setting controls if image integrity should be verified with upstream.
 
 ## License
 [AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
