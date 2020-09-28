@@ -30,6 +30,7 @@ var clientSettings = ClientSettings{
 	MaxCacheScanTimeInSeconds:  15,       // Default 15s max scan period
 	RejectInvalidTokens:        false,    // Default to not reject invalid tokens
 	VerifyImageIntegrity:       false,    // Default to not verify image integrity
+	AllowVisitorRefresh:        false,    // Default to not allow visitors to force-refresh images through Cache-Control
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
@@ -141,8 +142,17 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Check if image refresh is enabled and Cache-Control header is set
+	if clientSettings.AllowVisitorRefresh && r.Header.Get("Cache-Control") == "no-cache" {
+		// Log cache ignored
+		log.Printf("Request for %s - %s - %s ignored cache", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"))
+
+		// Set ok to false
+		ok = false
+	}
+
 	// Check if image exists and is a proper image and if cache-control is set
-	if !ok || r.Header.Get("Cache-Control") == "no-cache" {
+	if !ok {
 		// Log cache miss
 		log.Printf("Request for %s - %s - %s missed cache", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"))
 		w.Header().Set("X-Cache", "MISS")

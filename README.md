@@ -84,5 +84,8 @@ This setting controls if the cache server should reject all requests with missin
 ### `verify_image_integrity`
 This setting controls if image integrity should be verified with upstream.
 
+### `allow_visitor_refresh`
+This setting controls if visitors should be allowed to force image refresh through `Cache-Control` header.
+
 ## License
 [AGPLv3](https://choosealicense.com/licenses/agpl-3.0/)
