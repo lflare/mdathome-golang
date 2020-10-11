@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.5.4] - 2020-10-12
+### Changed
+- [2020-10-12] Replaced boltdb implementation with etcd's by [@lflare].
+
 ## [v1.5.3] - 2020-09-29
 ### Added
 - [2020-09-29] Added client configuration of allowing visitor-forced image refresh by [@lflare].
