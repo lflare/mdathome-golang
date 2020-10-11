@@ -3,7 +3,7 @@ package diskcache
 import (
 	"time"
 
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 // Cache is a struct that represents a cache object

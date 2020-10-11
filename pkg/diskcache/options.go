@@ -3,7 +3,7 @@
 package diskcache
 
 import (
-	"github.com/boltdb/bolt"
+	bolt "go.etcd.io/bbolt"
 )
 
 func (c *Cache) getOptions() *bolt.Options {
