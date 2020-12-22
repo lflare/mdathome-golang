@@ -16,6 +16,7 @@ type ClientSettings struct {
 	RejectInvalidTokens        bool   `json:"reject_invalid_tokens"`
 	VerifyImageIntegrity       bool   `json:"verify_image_integrity"`
 	AllowVisitorRefresh        bool   `json:"allow_visitor_refresh"`
+	OverrideUpstream           string `json:"override_upstream"`
 }
 
 // ServerRequest stores a single `secret` field for miscellanous operations

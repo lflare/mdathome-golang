@@ -94,6 +94,11 @@ func backgroundWorker() {
 		// Update server response in a goroutine
 		newServerResponse := backendPing()
 		if newServerResponse != nil {
+			// Check if overriding upstream
+			if clientSettings.OverrideUpstream != "" {
+				newServerResponse.ImageServer = clientSettings.OverrideUpstream
+			}
+
 			serverResponse = *newServerResponse
 		}
 

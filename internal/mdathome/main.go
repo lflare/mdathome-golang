@@ -31,6 +31,7 @@ var clientSettings = ClientSettings{
 	RejectInvalidTokens:        false,    // Default to not reject invalid tokens
 	VerifyImageIntegrity:       false,    // Default to not verify image integrity
 	AllowVisitorRefresh:        false,    // Default to not allow visitors to force-refresh images through Cache-Control
+	OverrideUpstream:           "",       // Default to nil to follow upstream by controller
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache

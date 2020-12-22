@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.5.5] - 2020-12-22
+### Changed
+- [2020-12-22] Added configuration option for upstream override by [@lflare].
+
 ## [v1.5.4] - 2020-10-12
 ### Changed
 - [2020-10-12] Replaced boltdb implementation with etcd's by [@lflare].
