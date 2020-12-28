@@ -169,7 +169,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Send request
 		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitizedURL)
 		if err != nil {
-			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed: %v", remoteAddr, err)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed upstream: %v", remoteAddr, err)
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -177,7 +177,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// If not 200
 		if imageFromUpstream.StatusCode != 200 {
-			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": "received non-200 status code", "status": imageFromUpstream.StatusCode}).Warnf("Request from %s failed to retrieve from upstream: %d", remoteAddr, imageFromUpstream.StatusCode)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": "received non-200 status code", "status": imageFromUpstream.StatusCode}).Warnf("Request from %s failed upstream: %d", remoteAddr, imageFromUpstream.StatusCode)
 			w.WriteHeader(imageFromUpstream.StatusCode)
 			return
 		}
@@ -196,7 +196,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Check if image was streamed properly
 		if err != nil {
-			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed upstream: %v", remoteAddr, err)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed downstream: %v", remoteAddr, err)
 			return
 		}
 
@@ -229,7 +229,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Check if image was streamed properly
 		if err != nil {
-			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed upstream: %v", remoteAddr, err)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed downstream: %v", remoteAddr, err)
 			return
 		}
 	}
