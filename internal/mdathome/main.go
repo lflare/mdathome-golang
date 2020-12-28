@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -15,6 +14,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/lflare/mdathome-golang/pkg/diskcache"
+	"github.com/sirupsen/logrus"
 )
 
 var clientSettings = ClientSettings{
@@ -33,6 +33,10 @@ var clientSettings = ClientSettings{
 	VerifyImageIntegrity:       false,    // Default to not verify image integrity
 	AllowVisitorRefresh:        false,    // Default to not allow visitors to force-refresh images through Cache-Control
 	OverrideUpstream:           "",       // Default to nil to follow upstream by controller
+	LogLevel:                   "trace",  // Default to "trace" for all logs
+	MaxLogSizeInMebibytes:      64,       // Default to maximum log size of 64MiB
+	MaxLogBackups:              3,        // Default to maximum log backups of 3
+	MaxLogAgeInDays:            7,        // Default to maximum log age of 7 days
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
@@ -49,22 +53,26 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		r.Header.Set("Referer", "None")
 	}
 
-	// Extract tokens
+	// Extract request variables
 	tokens := mux.Vars(r)
+	remoteAddr := r.RemoteAddr
+
+	// Prepare logger for request
+	requestLogger := log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer")})
 
 	// Sanitized URL
 	if tokens["image_type"] != "data" && tokens["image_type"] != "data-saver" {
-		log.Printf("Request for %s - %s - %s failed", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"))
+		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid image type"}).Warnf("Request from %s dropped due to invalid image type", remoteAddr)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`^[0-9a-f]{32}$`, tokens["chapter_hash"]); !matched {
-		log.Printf("Request for %s - %s - %s failed", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"))
+		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid url format"}).Warnf("Request from %s dropped due to invalid url format", remoteAddr)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`^.+\.(jpg|jpeg|png|gif)$`, tokens["image_filename"]); !matched {
-		log.Printf("Request for %s - %s - %s failed", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"))
+		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid image extension"}).Warnf("Request from %s dropped due to invalid image extension", remoteAddr)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -72,7 +80,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if token is valid
 	code, err := verifyToken(tokens["token"], tokens["chapter_hash"])
 	if err != nil {
-		log.Printf("Request for %s - %s - %s rejected: %v", r.URL.Path, r.RemoteAddr, r.Header.Get("Referer"), err)
+		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
 
 		// Reject invalid tokens if we enabled it
 		if clientSettings.RejectInvalidTokens {
@@ -103,12 +111,12 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	// Log request
-	log.Printf("Request for %s - %s - %s received", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"))
+	requestLogger.WithFields(logrus.Fields{"event": "received"}).Infof("Request from %s received", remoteAddr)
 
 	// Check if browser token exists
 	if r.Header.Get("If-Modified-Since") != "" {
 		// Log browser cache
-		log.Printf("Request for %s - %s - %s cached by browser", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"))
+		requestLogger.WithFields(logrus.Fields{"event": "cached"}).Debugf("Request from %s cached by browser", remoteAddr)
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
@@ -147,7 +155,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if image refresh is enabled and Cache-Control header is set
 	if clientSettings.AllowVisitorRefresh && r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache ignored
-		log.Printf("Request for %s - %s - %s ignored cache", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"))
+		requestLogger.WithFields(logrus.Fields{"event": "no-cache"}).Debugf("Request from %s ignored cache", remoteAddr)
 
 		// Set ok to false
 		ok = false
@@ -156,13 +164,13 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if image exists and is a proper image and if cache-control is set
 	if !ok {
 		// Log cache miss
-		log.Printf("Request for %s - %s - %s missed cache", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"))
+		requestLogger.WithFields(logrus.Fields{"event": "miss"}).Debugf("Request from %s missed cache", remoteAddr)
 		w.Header().Set("X-Cache", "MISS")
 
 		// Send request
 		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitizedURL)
 		if err != nil {
-			log.Printf("Request for %s failed: %v", serverResponse.ImageServer+sanitizedURL, err)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed: %v", remoteAddr, err)
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -170,7 +178,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// If not 200
 		if imageFromUpstream.StatusCode != 200 {
-			log.Printf("Request for %s failed: %d", serverResponse.ImageServer+sanitizedURL, imageFromUpstream.StatusCode)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": "received non-200 status code", "status": imageFromUpstream.StatusCode}).Warnf("Request from %s failed to retrieve from upstream: %d", remoteAddr, imageFromUpstream.StatusCode)
 			w.WriteHeader(imageFromUpstream.StatusCode)
 			return
 		}
@@ -181,7 +189,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
-		log.Printf("Request for %s - %s - %s processed in %dms", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
+		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
 
 		// Copy request to response body
 		var imageBuffer bytes.Buffer
@@ -189,14 +197,14 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Check if image was streamed properly
 		if err != nil {
-			log.Printf("Request for %s failed: %v", serverResponse.ImageServer+sanitizedURL, err)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed upstream: %v", remoteAddr, err)
 			return
 		}
 
 		// Save hash
 		err = cache.Set(sanitizedURL, imageBuffer.Bytes())
 		if err != nil {
-			log.Printf("Unexpected error encountered when saving image to cache: %v", err)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": err}).Warnf("Request from %s failed to save: %v", remoteAddr, err)
 		}
 	} else {
 		// Get length
@@ -205,7 +213,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		copy(image, imageFromCache)
 
 		// Log cache hit
-		log.Printf("Request for %s - %s - %s hit cache", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"))
+		requestLogger.WithFields(logrus.Fields{"event": "hit"}).Debugf("Request from %s hit cache", remoteAddr)
 		w.Header().Set("X-Cache", "HIT")
 
 		// Set Content-Length
@@ -214,7 +222,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
-		log.Printf("Request for %s - %s - %s processed in %dms", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"), processedTime)
+		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
 
 		// Convert bytes object into reader and send to client
 		imageReader := bytes.NewReader(image)
@@ -222,7 +230,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Check if image was streamed properly
 		if err != nil {
-			log.Printf("Request for %s failed: %v", serverResponse.ImageServer+sanitizedURL, err)
+			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed upstream: %v", remoteAddr, err)
 			return
 		}
 	}
@@ -230,7 +238,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// End time
 	totalTime := time.Since(startTime).Milliseconds()
 	w.Header().Set("X-Time-Taken", strconv.Itoa(int(totalTime)))
-	log.Printf("Request for %s - %s - %s completed in %dms", sanitizedURL, r.RemoteAddr, r.Header.Get("Referer"), totalTime)
+	requestLogger.WithFields(logrus.Fields{"event": "completed", "time_taken": totalTime}).Tracef("Request from %s completed in %dms", remoteAddr, totalTime)
 }
 
 // ShrinkDatabase initialises and shrinks the MD@Home database
@@ -257,6 +265,9 @@ func StartServer() {
 	// Load & prepare client settings
 	loadClientSettings()
 	saveClientSettings()
+
+	// Initialise logger
+	initLogger(clientSettings.LogLevel, clientSettings.MaxLogSizeInMebibytes, clientSettings.MaxLogBackups, clientSettings.MaxLogAgeInDays)
 
 	// Prepare diskcache
 	cache = diskcache.New(

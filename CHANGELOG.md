@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [2020-12-29] Added option to disable upstream connection pooling by [@lflare].
 
 ### Changed
+- [2020-12-29] Revamped logging system with loglevels and more by [@lflare].
 
 ### Deprecated
 

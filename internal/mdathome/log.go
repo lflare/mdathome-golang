@@ -1,49 +1,40 @@
 package mdathome
 
 import (
-	"io"
-	"log"
-	"os"
 	"time"
+
+	colorable "github.com/mattn/go-colorable"
+	"github.com/sirupsen/logrus"
+	"github.com/snowzach/rotatefilehook"
 )
 
-// Declares a prefix writer for enhancing logs
-type prefixWriter struct {
-	f func() string
-	w io.Writer
-}
+var log = logrus.New()
 
-func (p prefixWriter) Write(b []byte) (n int, err error) {
-	if n, err = p.w.Write([]byte(p.f())); err != nil {
-		return
-	}
-	nn, err := p.w.Write(b)
-	return n + nn, err
-}
+// InitLogger initialises global logger
+func initLogger(logLevelString string, maxLogSizeInMb int, maxLogBackups int, maxLogAgeInDays int) {
+	logLevel, _ := logrus.ParseLevel(logLevelString)
 
-// GetLogWriter returns a logging utility function
-func GetLogWriter() *os.File {
-	// Create log directory if it does not exist
-	err := os.MkdirAll("log", os.ModePerm)
+	rotateFileHook, err := rotatefilehook.NewRotateFileHook(rotatefilehook.RotateFileConfig{
+		Filename:   "log/mdathome.log",
+		MaxSize:    maxLogSizeInMb,
+		MaxBackups: 3,
+		MaxAge:     28,
+		Level:      logLevel,
+		Formatter: &logrus.JSONFormatter{
+			TimestampFormat: time.RFC822,
+		},
+	})
+
 	if err != nil {
-		log.Fatalf("Failed to create log/ directory: %v", err)
+		log.Fatalf("Failed to initialize file rotate hook: %v", err)
 	}
 
-	// Open file handler and return file handler for defer
-	file, err := os.OpenFile("log/latest.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("Failed to open log/latest.log: %v", err)
-	}
-
-	// Set logging parameters
-	logWriter := io.MultiWriter(os.Stdout, file)
-	writer := prefixWriter{
-		f: func() string { return time.Now().Format(time.RFC3339) + " " },
-		w: logWriter,
-	}
-	log.SetFlags(0)
-	log.SetOutput(writer)
-
-	// Return file pointer
-	return file
+	log.SetLevel(logLevel)
+	log.SetOutput(colorable.NewColorableStdout())
+	log.SetFormatter(&logrus.TextFormatter{
+		ForceColors:     true,
+		FullTimestamp:   true,
+		TimestampFormat: time.RFC822,
+	})
+	log.AddHook(rotateFileHook)
 }

@@ -18,6 +18,10 @@ type ClientSettings struct {
 	VerifyImageIntegrity       bool   `json:"verify_image_integrity"`
 	AllowVisitorRefresh        bool   `json:"allow_visitor_refresh"`
 	OverrideUpstream           string `json:"override_upstream"`
+	LogLevel                   string `json:"log_level"`
+	MaxLogSizeInMebibytes      int    `json:"max_log_size_in_mebibytes"`
+	MaxLogBackups              int    `json:"max_log_backups"`
+	MaxLogAgeInDays            int    `json:"max_log_age_in_days"`
 }
 
 // ServerRequest stores a single `secret` field for miscellanous operations

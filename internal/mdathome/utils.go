@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/tcnksm/go-latest"
 )
 
@@ -85,6 +85,12 @@ func backgroundWorker() {
 		// Reload client configuration
 		log.Println("Reloading client configuration")
 		loadClientSettings()
+
+		// Update log level if need be
+		newLogLevel, err := logrus.ParseLevel(clientSettings.LogLevel)
+		if err == nil {
+			log.SetLevel(newLogLevel)
+		}
 
 		// Update max cache size
 		cache.UpdateCacheLimit(clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024)

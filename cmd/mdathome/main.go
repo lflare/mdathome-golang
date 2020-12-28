@@ -4,13 +4,12 @@ import (
 	"flag"
 
 	"github.com/lflare/mdathome-golang/internal/mdathome"
+	"github.com/sirupsen/logrus"
 )
 
-func main() {
-	// Prepare logging
-	logFile := mdathome.GetLogWriter()
-	defer logFile.Close()
+var log = logrus.New()
 
+func main() {
 	// Get arguments
 	shrinkPtr := flag.Bool("shrink-database", false, "Shrink cache.db (may take a long time)")
 	flag.Parse()
