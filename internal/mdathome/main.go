@@ -80,10 +80,9 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if token is valid
 	code, err := verifyToken(tokens["token"], tokens["chapter_hash"])
 	if err != nil {
-		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
-
 		// Reject invalid tokens if we enabled it
 		if clientSettings.RejectInvalidTokens {
+			requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
 			w.WriteHeader(code)
 			return
 		}

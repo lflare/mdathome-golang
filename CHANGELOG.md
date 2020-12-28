@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.6.1] - 2020-12-29
+### Fixed
+- [2020-12-29] Fixed invalid logging on invalid token but not rejected requests by [@lflare].
+
 ## [v1.6.0] - 2020-12-29
 ### Added
 - [2020-12-29] Added option to disable upstream connection pooling by [@lflare].
