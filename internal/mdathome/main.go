@@ -21,6 +21,7 @@ var clientSettings = ClientSettings{
 	CacheDirectory:             "cache/", // Default cache directory
 	ClientPort:                 44300,    // Default client port
 	AllowHTTP2:                 true,     // Allow HTTP2 by default
+	AllowUpstreamPooling:       true,     // Allow upstream pooling by default
 	MaxKilobitsPerSecond:       10000,    // Default 10Mbps
 	MaxCacheSizeInMebibytes:    10240,    // Default 10GB
 	MaxReportedSizeInMebibytes: 10240,    // Default 10GB
@@ -269,8 +270,9 @@ func StartServer() {
 
 	// Prepare upstream client
 	tr := &http.Transport{
-		MaxIdleConns:    10,
-		IdleConnTimeout: 60 * time.Second,
+		MaxIdleConns:      10,
+		IdleConnTimeout:   60 * time.Second,
+		DisableKeepAlives: !clientSettings.AllowUpstreamPooling,
 	}
 	client = &http.Client{Transport: tr}
 

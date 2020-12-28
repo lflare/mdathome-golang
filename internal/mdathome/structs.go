@@ -6,6 +6,7 @@ type ClientSettings struct {
 	ClientSecret               string `json:"client_secret"`
 	ClientPort                 int    `json:"client_port"`
 	AllowHTTP2                 bool   `json:"allow_http2"`
+	AllowUpstreamPooling       bool   `json:"allow_upstream_pooling"`
 	MaxKilobitsPerSecond       int    `json:"max_kilobits_per_second"`
 	MaxCacheSizeInMebibytes    int    `json:"max_cache_size_in_mebibytes"`
 	MaxReportedSizeInMebibytes int    `json:"max_reported_size_in_mebibytes"`
