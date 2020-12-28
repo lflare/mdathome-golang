@@ -22,12 +22,12 @@ LDFLAGS = -ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default:
 	export CGO_ENABLED=0
-	go build -o ./mdathome-golang -trimpath -ldflags '-s -w' ./cmd/mdathome
+	go build -o ./mdathome-golang -tags netgo -trimpath -ldflags '-s -w' ./cmd/mdathome
 	upx mdathome-golang
 
 local:
 	export CGO_ENABLED=0
-	go build -o ./mdathome-golang -trimpath -ldflags '-s -w' ./cmd/mdathome
+	go build -o ./mdathome-golang -tags netgo -trimpath -ldflags '-s -w' ./cmd/mdathome
 	upx mdathome-golang
 
 snapshot:
