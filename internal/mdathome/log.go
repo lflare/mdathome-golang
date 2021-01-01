@@ -34,7 +34,7 @@ func initLogger(logLevelString string, maxLogSizeInMb int, maxLogBackups int, ma
 	log.SetFormatter(&logrus.TextFormatter{
 		ForceColors:     true,
 		FullTimestamp:   true,
-		TimestampFormat: time.RFC822,
+		TimestampFormat: time.RFC3339,
 	})
 	log.AddHook(rotateFileHook)
 }
