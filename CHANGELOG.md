@@ -8,16 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- [2021-01-01] Changed timestamp format to RFC3339 instead of RFC822 by [@lflare].
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- [2021-01-01] Fixed file logging not updating log level by [@lflare].
 
 ### Security
+
+## [v1.6.2] - 2021-01-01
+### Changed
+- [2021-01-01] Changed timestamp format to RFC3339 instead of RFC822 by [@lflare].
+
+### Fixed
+- [2021-01-01] Fixed file logging not updating log level by [@lflare].
 
 ## [v1.6.1] - 2020-12-29
 ### Fixed
