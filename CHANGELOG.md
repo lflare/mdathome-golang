@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+- [2021-01-01] Fixed file logging not updating log level by [@lflare].
 
 ### Security
 

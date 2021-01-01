@@ -19,7 +19,7 @@ func initLogger(logLevelString string, maxLogSizeInMb int, maxLogBackups int, ma
 		MaxSize:    maxLogSizeInMb,
 		MaxBackups: 3,
 		MaxAge:     28,
-		Level:      logLevel,
+		Level:      logrus.TraceLevel,
 		Formatter: &logrus.JSONFormatter{
 			TimestampFormat: time.RFC822,
 		},
