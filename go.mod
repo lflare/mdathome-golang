@@ -3,6 +3,7 @@ module github.com/lflare/mdathome-golang
 go 1.14
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/mux v1.8.0
@@ -14,4 +15,5 @@ require (
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
