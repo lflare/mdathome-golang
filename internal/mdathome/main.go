@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/gorilla/mux"
 	"github.com/lflare/mdathome-golang/pkg/diskcache"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -204,7 +204,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
 		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
-		prometheusProcessedTime.Observe(float64(processedTime))
+		prometheusProcessedTime.Update(float64(processedTime))
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
 		// Copy request to response body
@@ -241,7 +241,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
 		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
-		prometheusProcessedTime.Observe(float64(processedTime))
+		prometheusProcessedTime.Update(float64(processedTime))
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
 		// Convert bytes object into reader and send to client
@@ -259,7 +259,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// End time
 	totalTime := time.Since(startTime).Milliseconds()
 	requestLogger.WithFields(logrus.Fields{"event": "completed", "time_taken": totalTime}).Tracef("Request from %s completed in %dms", remoteAddr, totalTime)
-	prometheusCompletionTime.Observe(float64(totalTime))
+	prometheusCompletionTime.Update(float64(totalTime))
 	w.Header().Set("X-Time-Taken", strconv.Itoa(int(totalTime)))
 }
 
@@ -330,7 +330,9 @@ func StartServer() {
 	// Prepare server
 	r := mux.NewRouter()
 	if clientSettings.EnablePrometheusMetrics {
-		r.Handle("/metrics", promhttp.Handler())
+		r.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
+			metrics.WritePrometheus(w, true)
+		})
 	}
 	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
 	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)

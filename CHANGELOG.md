@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.7.1] - 2021-01-03
+### Changed
+- [2021-01-03] Swapped to VictoriaMetrics for better Histogram by [@lflare].
+
 ## [v1.7.0] - 2021-01-03
 ### Added
 - [2021-01-03] Added Prometheus metrics endpoint by [@lflare].
