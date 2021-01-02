@@ -2,26 +2,30 @@ package mdathome
 
 // ClientSettings stores client settings
 type ClientSettings struct {
-	CacheDirectory             string `json:"cache_directory"`
-	ClientSecret               string `json:"client_secret"`
-	ClientPort                 int    `json:"client_port"`
-	AllowHTTP2                 bool   `json:"allow_http2"`
-	AllowUpstreamPooling       bool   `json:"allow_upstream_pooling"`
-	MaxKilobitsPerSecond       int    `json:"max_kilobits_per_second"`
-	MaxCacheSizeInMebibytes    int    `json:"max_cache_size_in_mebibytes"`
-	MaxReportedSizeInMebibytes int    `json:"max_reported_size_in_mebibytes"`
-	GracefulShutdownInSeconds  int    `json:"graceful_shutdown_in_seconds"`
-	CacheScanIntervalInSeconds int    `json:"cache_scan_interval_in_seconds"`
-	CacheRefreshAgeInSeconds   int    `json:"cache_refresh_age_in_seconds"`
-	MaxCacheScanTimeInSeconds  int    `json:"max_cache_scan_time_in_seconds"`
-	RejectInvalidTokens        bool   `json:"reject_invalid_tokens"`
-	VerifyImageIntegrity       bool   `json:"verify_image_integrity"`
-	AllowVisitorRefresh        bool   `json:"allow_visitor_refresh"`
-	OverrideUpstream           string `json:"override_upstream"`
-	LogLevel                   string `json:"log_level"`
-	MaxLogSizeInMebibytes      int    `json:"max_log_size_in_mebibytes"`
-	MaxLogBackups              int    `json:"max_log_backups"`
-	MaxLogAgeInDays            int    `json:"max_log_age_in_days"`
+	CacheDirectory            string `json:"cache_directory"`
+	ClientPort                int    `json:"client_port"`
+	ClientSecret              string `json:"client_secret"`
+	GracefulShutdownInSeconds int    `json:"graceful_shutdown_in_seconds"`
+
+	MaxKilobitsPerSecond       int `json:"max_kilobits_per_second"`
+	MaxCacheSizeInMebibytes    int `json:"max_cache_size_in_mebibytes"`
+	MaxReportedSizeInMebibytes int `json:"max_reported_size_in_mebibytes"`
+
+	CacheScanIntervalInSeconds int `json:"cache_scan_interval_in_seconds"`
+	CacheRefreshAgeInSeconds   int `json:"cache_refresh_age_in_seconds"`
+	MaxCacheScanTimeInSeconds  int `json:"max_cache_scan_time_in_seconds"`
+
+	AllowHTTP2           bool   `json:"allow_http2"`
+	AllowUpstreamPooling bool   `json:"allow_upstream_pooling"`
+	AllowVisitorRefresh  bool   `json:"allow_visitor_refresh"`
+	OverrideUpstream     string `json:"override_upstream"`
+	RejectInvalidTokens  bool   `json:"reject_invalid_tokens"`
+	VerifyImageIntegrity bool   `json:"verify_image_integrity"`
+
+	LogLevel              string `json:"log_level"`
+	MaxLogSizeInMebibytes int    `json:"max_log_size_in_mebibytes"`
+	MaxLogBackups         int    `json:"max_log_backups"`
+	MaxLogAgeInDays       int    `json:"max_log_age_in_days"`
 }
 
 // ServerRequest stores a single `secret` field for miscellanous operations

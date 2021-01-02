@@ -18,25 +18,29 @@ import (
 )
 
 var clientSettings = ClientSettings{
-	CacheDirectory:             "cache/", // Default cache directory
-	ClientPort:                 44300,    // Default client port
-	AllowHTTP2:                 true,     // Allow HTTP2 by default
-	AllowUpstreamPooling:       true,     // Allow upstream pooling by default
-	MaxKilobitsPerSecond:       10000,    // Default 10Mbps
-	MaxCacheSizeInMebibytes:    10240,    // Default 10GB
-	MaxReportedSizeInMebibytes: 10240,    // Default 10GB
-	GracefulShutdownInSeconds:  300,      // Default 5m graceful shutdown
-	CacheScanIntervalInSeconds: 300,      // Default 5m scan interval
-	CacheRefreshAgeInSeconds:   3600,     // Default 1h cache refresh age
-	MaxCacheScanTimeInSeconds:  15,       // Default 15s max scan period
-	RejectInvalidTokens:        false,    // Default to not reject invalid tokens
-	VerifyImageIntegrity:       false,    // Default to not verify image integrity
-	AllowVisitorRefresh:        false,    // Default to not allow visitors to force-refresh images through Cache-Control
-	OverrideUpstream:           "",       // Default to nil to follow upstream by controller
-	LogLevel:                   "trace",  // Default to "trace" for all logs
-	MaxLogSizeInMebibytes:      64,       // Default to maximum log size of 64MiB
-	MaxLogBackups:              3,        // Default to maximum log backups of 3
-	MaxLogAgeInDays:            7,        // Default to maximum log age of 7 days
+	CacheDirectory:            "cache/", // Default cache directory
+	ClientPort:                44300,    // Default client port
+	GracefulShutdownInSeconds: 300,      // Default 5m graceful shutdown
+
+	MaxKilobitsPerSecond:       10000, // Default 10Mbps
+	MaxCacheSizeInMebibytes:    10240, // Default 10GB
+	MaxReportedSizeInMebibytes: 10240, // Default 10GB
+
+	CacheScanIntervalInSeconds: 300,  // Default 5m scan interval
+	CacheRefreshAgeInSeconds:   3600, // Default 1h cache refresh age
+	MaxCacheScanTimeInSeconds:  15,   // Default 15s max scan period
+
+	AllowHTTP2:           true,  // Allow HTTP2 by default
+	AllowUpstreamPooling: true,  // Allow upstream pooling by default
+	AllowVisitorRefresh:  false, // Default to not allow visitors to force-refresh images through Cache-Control
+	OverrideUpstream:     "",    // Default to nil to follow upstream by controller
+	RejectInvalidTokens:  false, // Default to not reject invalid tokens
+	VerifyImageIntegrity: false, // Default to not verify image integrity
+
+	LogLevel:              "trace", // Default to "trace" for all logs
+	MaxLogSizeInMebibytes: 64,      // Default to maximum log size of 64MiB
+	MaxLogBackups:         3,       // Default to maximum log backups of 3
+	MaxLogAgeInDays:       7,       // Default to maximum log age of 7 days
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
