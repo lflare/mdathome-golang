@@ -14,6 +14,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/lflare/mdathome-golang/pkg/diskcache"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,12 +31,13 @@ var clientSettings = ClientSettings{
 	CacheRefreshAgeInSeconds:   3600, // Default 1h cache refresh age
 	MaxCacheScanTimeInSeconds:  15,   // Default 15s max scan period
 
-	AllowHTTP2:           true,  // Allow HTTP2 by default
-	AllowUpstreamPooling: true,  // Allow upstream pooling by default
-	AllowVisitorRefresh:  false, // Default to not allow visitors to force-refresh images through Cache-Control
-	OverrideUpstream:     "",    // Default to nil to follow upstream by controller
-	RejectInvalidTokens:  false, // Default to not reject invalid tokens
-	VerifyImageIntegrity: false, // Default to not verify image integrity
+	AllowHTTP2:              true,  // Allow HTTP2 by default
+	AllowUpstreamPooling:    true,  // Allow upstream pooling by default
+	AllowVisitorRefresh:     false, // Default to not allow visitors to force-refresh images through Cache-Control
+	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
+	OverrideUpstream:        "",    // Default to nil to follow upstream by controller
+	RejectInvalidTokens:     false, // Default to not reject invalid tokens
+	VerifyImageIntegrity:    false, // Default to not verify image integrity
 
 	LogLevel:              "trace", // Default to "trace" for all logs
 	MaxLogSizeInMebibytes: 64,      // Default to maximum log size of 64MiB
@@ -67,16 +69,19 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Sanitized URL
 	if tokens["image_type"] != "data" && tokens["image_type"] != "data-saver" {
 		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid image type"}).Warnf("Request from %s dropped due to invalid image type", remoteAddr)
+		prometheusDropped.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`^[0-9a-f]{32}$`, tokens["chapter_hash"]); !matched {
 		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid url format"}).Warnf("Request from %s dropped due to invalid url format", remoteAddr)
+		prometheusDropped.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`^.+\.(jpg|jpeg|png|gif)$`, tokens["image_filename"]); !matched {
 		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid image extension"}).Warnf("Request from %s dropped due to invalid image extension", remoteAddr)
+		prometheusDropped.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -88,6 +93,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		if clientSettings.RejectInvalidTokens {
 			requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
 			w.WriteHeader(code)
+			prometheusDropped.Inc()
 			return
 		}
 	}
@@ -115,11 +121,13 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Log request
 	requestLogger.WithFields(logrus.Fields{"event": "received"}).Infof("Request from %s received", remoteAddr)
+	prometheusRequests.Inc()
 
 	// Check if browser token exists
 	if r.Header.Get("If-Modified-Since") != "" {
 		// Log browser cache
 		requestLogger.WithFields(logrus.Fields{"event": "cached"}).Debugf("Request from %s cached by browser", remoteAddr)
+		prometheusCached.Inc()
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
@@ -159,6 +167,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	if clientSettings.AllowVisitorRefresh && r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache ignored
 		requestLogger.WithFields(logrus.Fields{"event": "no-cache"}).Debugf("Request from %s ignored cache", remoteAddr)
+		prometheusForced.Inc()
 
 		// Set ok to false
 		ok = false
@@ -168,12 +177,14 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		// Log cache miss
 		requestLogger.WithFields(logrus.Fields{"event": "miss"}).Debugf("Request from %s missed cache", remoteAddr)
+		prometheusMiss.Inc()
 		w.Header().Set("X-Cache", "MISS")
 
 		// Send request
 		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitizedURL)
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed upstream: %v", remoteAddr, err)
+			prometheusFailed.Inc()
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -182,6 +193,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// If not 200
 		if imageFromUpstream.StatusCode != 200 {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": "received non-200 status code", "status": imageFromUpstream.StatusCode}).Warnf("Request from %s failed upstream: %d", remoteAddr, imageFromUpstream.StatusCode)
+			prometheusFailed.Inc()
 			w.WriteHeader(imageFromUpstream.StatusCode)
 			return
 		}
@@ -191,8 +203,9 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
-		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
+		prometheusProcessedTime.Observe(float64(processedTime))
+		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
 		// Copy request to response body
 		var imageBuffer bytes.Buffer
@@ -201,6 +214,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Check if image was streamed properly
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed downstream: %v", remoteAddr, err)
+			prometheusFailed.Inc()
 			return
 		}
 
@@ -208,6 +222,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		err = cache.Set(sanitizedURL, imageBuffer.Bytes())
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": err}).Warnf("Request from %s failed to save: %v", remoteAddr, err)
+			prometheusFailed.Inc()
 		}
 	} else {
 		// Get length
@@ -217,6 +232,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Log cache hit
 		requestLogger.WithFields(logrus.Fields{"event": "hit"}).Debugf("Request from %s hit cache", remoteAddr)
+		prometheusHit.Inc()
 		w.Header().Set("X-Cache", "HIT")
 
 		// Set Content-Length
@@ -224,8 +240,9 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
-		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
+		prometheusProcessedTime.Observe(float64(processedTime))
+		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
 		// Convert bytes object into reader and send to client
 		imageReader := bytes.NewReader(image)
@@ -234,14 +251,16 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Check if image was streamed properly
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed downstream: %v", remoteAddr, err)
+			prometheusFailed.Inc()
 			return
 		}
 	}
 
 	// End time
 	totalTime := time.Since(startTime).Milliseconds()
-	w.Header().Set("X-Time-Taken", strconv.Itoa(int(totalTime)))
 	requestLogger.WithFields(logrus.Fields{"event": "completed", "time_taken": totalTime}).Tracef("Request from %s completed in %dms", remoteAddr, totalTime)
+	prometheusCompletionTime.Observe(float64(totalTime))
+	w.Header().Set("X-Time-Taken", strconv.Itoa(int(totalTime)))
 }
 
 // ShrinkDatabase initialises and shrinks the MD@Home database
@@ -310,6 +329,9 @@ func StartServer() {
 
 	// Prepare server
 	r := mux.NewRouter()
+	if clientSettings.EnablePrometheusMetrics {
+		r.Handle("/metrics", promhttp.Handler())
+	}
 	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
 	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
 	http.Handle("/", r)

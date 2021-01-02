@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- [2021-01-03] Organised settings by type by [@lflare].
 
 ### Deprecated
 
@@ -17,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.7.0] - 2021-01-03
+### Added
+- [2021-01-03] Added Prometheus metrics endpoint by [@lflare].
+
+### Changed
+- [2021-01-03] Organised settings by type by [@lflare].
 
 ## [v1.6.2] - 2021-01-01
 ### Changed

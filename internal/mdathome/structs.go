@@ -15,12 +15,13 @@ type ClientSettings struct {
 	CacheRefreshAgeInSeconds   int `json:"cache_refresh_age_in_seconds"`
 	MaxCacheScanTimeInSeconds  int `json:"max_cache_scan_time_in_seconds"`
 
-	AllowHTTP2           bool   `json:"allow_http2"`
-	AllowUpstreamPooling bool   `json:"allow_upstream_pooling"`
-	AllowVisitorRefresh  bool   `json:"allow_visitor_refresh"`
-	OverrideUpstream     string `json:"override_upstream"`
-	RejectInvalidTokens  bool   `json:"reject_invalid_tokens"`
-	VerifyImageIntegrity bool   `json:"verify_image_integrity"`
+	AllowHTTP2              bool   `json:"allow_http2"`
+	AllowUpstreamPooling    bool   `json:"allow_upstream_pooling"`
+	AllowVisitorRefresh     bool   `json:"allow_visitor_refresh"`
+	EnablePrometheusMetrics bool   `json:"enable_prometheus_metrics"`
+	OverrideUpstream        string `json:"override_upstream"`
+	RejectInvalidTokens     bool   `json:"reject_invalid_tokens"`
+	VerifyImageIntegrity    bool   `json:"verify_image_integrity"`
 
 	LogLevel              string `json:"log_level"`
 	MaxLogSizeInMebibytes int    `json:"max_log_size_in_mebibytes"`
