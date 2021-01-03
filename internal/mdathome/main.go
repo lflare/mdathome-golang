@@ -133,7 +133,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load cache
-	imageFromCache, err := cache.Get(sanitizedURL)
+	imageFromCache, modTime, err := cache.Get(sanitizedURL)
 
 	// Check image integrity if found in cache
 	ok := (err == nil)
@@ -201,6 +201,18 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Set Content-Length
 		w.Header().Set("Content-Length", imageFromUpstream.Header.Get("Content-Length"))
 
+		// Set Last-Modified
+		modTime := time.Now()
+		if lastModified := imageFromUpstream.Header.Get("Last-Modified"); lastModified != "" {
+			w.Header().Set("Last-Modified", lastModified)
+
+			if upstreamModTime, err := time.Parse(http.TimeFormat, lastModified); err == nil {
+				modTime = upstreamModTime
+			} else if seconds, err := strconv.Atoi(lastModified); err == nil && seconds > 0 {
+				modTime = time.Unix(int64(seconds), 0)
+			}
+		}
+
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
 		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
@@ -219,7 +231,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Save hash
-		err = cache.Set(sanitizedURL, imageBuffer.Bytes())
+		err = cache.Set(sanitizedURL, modTime, imageBuffer.Bytes())
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": err}).Warnf("Request from %s failed to save: %v", remoteAddr, err)
 			prometheusFailed.Inc()
@@ -235,8 +247,9 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		prometheusHit.Inc()
 		w.Header().Set("X-Cache", "HIT")
 
-		// Set Content-Length
+		// Set Content-Length & Last-Modified
 		w.Header().Set("Content-Length", strconv.Itoa(length))
+		w.Header().Set("Last-Modified", modTime.Format(http.TimeFormat))
 
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()

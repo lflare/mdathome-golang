@@ -38,10 +38,10 @@ func (c *Cache) DeleteFile(file string) error {
 }
 
 // Get takes a key, hashes it, and returns the corresponding file in the directory
-func (c *Cache) Get(key string) (resp []byte, err error) {
+func (c *Cache) Get(key string) (resp []byte, mtime time.Time, err error) {
 	// Check for empty cache key
 	if len(key) == 0 {
-		return nil, fmt.Errorf("Empty cache key")
+		return nil, time.Now(), fmt.Errorf("Empty cache key")
 	}
 
 	// Get cache key
@@ -51,14 +51,21 @@ func (c *Cache) Get(key string) (resp []byte, err error) {
 	file, err := ioutil.ReadFile(c.directory + "/" + dir + "/" + key)
 	if err != nil {
 		err = fmt.Errorf("Failed to read image from key %s: %v", key, err)
-		return nil, err
+		return nil, time.Now(), err
+	}
+
+	// Get last modified header
+	info, err := os.Stat(c.directory + "/" + dir + "/" + key)
+	if err != nil {
+		err = fmt.Errorf("Failed to retrieve file information from key %s: %v", key, err)
+		return nil, time.Now(), err
 	}
 
 	// Attempt to get keyPair
 	keyPair, err := c.getEntry(key)
 	if err != nil {
 		err = fmt.Errorf("Failed to get entry for cache key %s: %v", key, err)
-		return nil, err
+		return nil, time.Now(), err
 	}
 
 	// If keyPair is older than configured cacheRefreshAge, refresh
@@ -77,16 +84,16 @@ func (c *Cache) Get(key string) (resp []byte, err error) {
 		err := c.setEntry(keyPair)
 		if err != nil {
 			err = fmt.Errorf("Failed to set entry for key %s: %v", key, err)
-			return nil, err
+			return nil, time.Now(), err
 		}
 	}
 
 	// Return file
-	return file, nil
+	return file, info.ModTime(), nil
 }
 
 // Set takes a key, hashes it, and saves the `resp` bytearray into the corresponding file
-func (c *Cache) Set(key string, resp []byte) error {
+func (c *Cache) Set(key string, mtime time.Time, resp []byte) error {
 	// Check for empty cache key
 	if len(key) == 0 {
 		return fmt.Errorf("Empty cache key")
@@ -108,6 +115,9 @@ func (c *Cache) Set(key string, resp []byte) error {
 		err = fmt.Errorf("Failed to write image to disk for key %s: %v", key, err)
 		return err
 	}
+
+	// Update modification time
+	os.Chtimes(c.directory+"/"+dir+"/"+key, mtime, mtime)
 
 	// Update database
 	size := len(resp)

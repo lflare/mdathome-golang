@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.7.3] - 2021-01-03
+### Fixed
+- [2021-01-03] Fixed Last-Modified header reporting by [@lflare].
+
 ## [v1.7.2] - 2021-01-03
 ### Changed
 - [2021-01-03] Improved goreleaser configuration by [@lflare].
