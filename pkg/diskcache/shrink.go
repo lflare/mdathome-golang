@@ -1,7 +1,6 @@
 package diskcache
 
 import (
-	"log"
 	"os"
 
 	bolt "go.etcd.io/bbolt"

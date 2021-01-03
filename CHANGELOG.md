@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.7.2] - 2021-01-03
+### Changed
+- [2021-01-03] Improved goreleaser configuration by [@lflare].
+
+### Fixed
+- [2021-01-03] Get diskcache to work with logrus logger by [@lflare].
+
 ## [v1.7.1] - 2021-01-03
 ### Changed
 - [2021-01-03] Swapped to VictoriaMetrics for better Histogram by [@lflare].

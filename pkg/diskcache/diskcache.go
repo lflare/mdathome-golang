@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"sort"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
+
+var log = logrus.New()
 
 // DeleteFile takes an absolute path to a file and deletes it
 func (c *Cache) DeleteFile(file string) error {
@@ -60,7 +63,7 @@ func (c *Cache) Get(key string) (resp []byte, err error) {
 
 	// If keyPair is older than configured cacheRefreshAge, refresh
 	if keyPair.Timestamp < time.Now().Add(-1*time.Duration(c.cacheRefreshAge)*time.Second).Unix() {
-		log.Printf("Updating timestamp: %+v", keyPair)
+		log.Debugf("Updating timestamp: %+v", keyPair)
 		if err != nil {
 			size := len(file)
 			timestamp := time.Now().Unix()
@@ -148,12 +151,12 @@ func (c *Cache) StartBackgroundThread() {
 		}
 
 		// Log
-		log.Printf("Current diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
+		log.Infof("Current diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
 
 		// If size is bigger than configured byte limit, keep deleting last recently used files
 		if size > c.cacheLimit {
 			// Get ready to shrink cache
-			log.Printf("Shrinking diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
+			log.Infof("Shrinking diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
 			deletedSize := 0
 			deletedItems := 0
 
@@ -165,7 +168,7 @@ func (c *Cache) StartBackgroundThread() {
 				// Delete file
 				err := c.DeleteFile(v.Key)
 				if err != nil {
-					log.Printf("Unable to delete file in key %s: %v", v.Key, err)
+					log.Warnf("Unable to delete file in key %s: %v", v.Key, err)
 					continue
 				}
 
@@ -185,7 +188,7 @@ func (c *Cache) StartBackgroundThread() {
 			}
 
 			// Log success
-			log.Printf("Successfully shrunk diskcache by: %s, %d items", ByteCountIEC(deletedSize), deletedItems)
+			log.Infof("Successfully shrunk diskcache by: %s, %d items", ByteCountIEC(deletedSize), deletedItems)
 		}
 
 		// Sleep till next execution
@@ -236,7 +239,7 @@ func getCacheKey(key string) (string, string) {
 }
 
 // New returns a new Cache that will store files in basePath
-func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAge int, maxCacheScanTime int) *Cache {
+func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAge int, maxCacheScanTime int, logger *logrus.Logger) *Cache {
 	cache := Cache{
 		directory:         directory,
 		cacheLimit:        cacheLimit,
@@ -244,6 +247,7 @@ func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAg
 		cacheRefreshAge:   cacheRefreshAge,
 		maxCacheScanTime:  maxCacheScanTime,
 	}
+	log = logger
 
 	// Setup BoltDB
 	err := cache.setupDB()

@@ -271,7 +271,7 @@ func ShrinkDatabase() {
 
 	// Prepare diskcache
 	log.Println("Preparing database...")
-	cache = diskcache.New(clientSettings.CacheDirectory, 0, 0, 0, 0)
+	cache = diskcache.New(clientSettings.CacheDirectory, 0, 0, 0, 0, log)
 	defer cache.Close()
 
 	// Attempts to start cache shrinking
@@ -298,6 +298,7 @@ func StartServer() {
 		clientSettings.CacheScanIntervalInSeconds,
 		clientSettings.CacheRefreshAgeInSeconds,
 		clientSettings.MaxCacheScanTimeInSeconds,
+		log,
 	)
 	defer cache.Close()
 
