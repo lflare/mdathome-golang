@@ -200,8 +200,10 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Set Content-Length
-		w.Header().Set("Content-Length", imageFromUpstream.Header.Get("Content-Length"))
+		// Set Content-Length if exists
+		if contentLength := imageFromUpstream.Header.Get("Content-Length"); contentLength != "" {
+			w.Header().Set("Content-Length", contentLength)
+		}
 
 		// Set Last-Modified
 		modTime := time.Now()

@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.7.6] - 2021-01-04
+### Fixed
+- [2021-01-04] Fixed streamed images Content-Length header being inaccurate on `data-saver` images by [@lflare].
+
 ## [v1.7.5] - 2021-01-04
 ### Added
 - [2021-01-04] Adding Prometheus metric for invalid checksum images by [@lflare].
