@@ -33,6 +33,7 @@ As with the official client, this client reads a configuration JSON file.
 {
     "cache_directory": "cache/",
     "client_port": 44300,
+    "override_port_report": 0,
     "client_secret": "",
     "graceful_shutdown_in_seconds": 300,
     "max_kilobits_per_second": 10000,
@@ -63,6 +64,9 @@ Allows configuration of where the cache will be stored at.
 
 #### - `client_port` - Recommended `443`
 Allows configuration of whichever port the client will listen on.
+
+#### - `override_port_report`
+Allows overriding of reported port to backend. Defaults to `0` for disabled.
 
 #### - `client_secret`
 Self-explanatory, this should be obtained from the [MangaDex@Home page](https://mangadex.org/md_at_home).

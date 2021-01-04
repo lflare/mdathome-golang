@@ -4,6 +4,7 @@ package mdathome
 type ClientSettings struct {
 	CacheDirectory            string `json:"cache_directory"`
 	ClientPort                int    `json:"client_port"`
+	OverridePortReport        int    `json:"override_port_report"`
 	ClientSecret              string `json:"client_secret"`
 	GracefulShutdownInSeconds int    `json:"graceful_shutdown_in_seconds"`
 

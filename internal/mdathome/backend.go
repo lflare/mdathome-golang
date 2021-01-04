@@ -19,6 +19,13 @@ func backendPing() *ServerResponse {
 		BuildVersion: specVersion,
 		TLSCreatedAt: nil,
 	}
+
+	// Check if we are overridding reported port
+	if clientSettings.OverridePortReport != 0 {
+		settings.Port = clientSettings.OverridePortReport
+	}
+
+	// Marshal JSON
 	settingsJSON, _ := json.Marshal(&settings)
 
 	// Ping backend server
