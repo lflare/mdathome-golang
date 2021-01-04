@@ -145,7 +145,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Check SHA256 hash if exists in URL (might be computationally heavy)
-		if clientSettings.VerifyImageIntegrity {
+		if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
 			subTokens := strings.Split(tokens["image_filename"], "-")
 			if len(subTokens) == 2 {
 				// Check given hash length
@@ -156,6 +156,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 					// Compare hash
 					if givenHash != calculatedHash {
+						requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
 						ok = false
 					}
 				}
