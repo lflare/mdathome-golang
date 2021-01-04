@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.7.5] - 2021-01-04
+### Added
+- [2021-01-04] Adding Prometheus metric for invalid checksum images by [@lflare].
+
 ## [v1.7.4] - 2021-01-04
 ### Fixed
 - [2021-01-04] Disabled image verification for `data-saver` images by [@lflare].

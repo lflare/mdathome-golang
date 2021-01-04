@@ -157,6 +157,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 					// Compare hash
 					if givenHash != calculatedHash {
 						requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
+						prometheusChecksum.Inc()
 						ok = false
 					}
 				}

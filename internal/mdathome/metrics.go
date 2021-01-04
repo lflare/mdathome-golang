@@ -12,6 +12,7 @@ var (
 	prometheusCached         = metrics.NewCounter("cached")
 	prometheusForced         = metrics.NewCounter("forced")
 	prometheusFailed         = metrics.NewCounter("failed")
+	prometheusChecksum       = metrics.NewCounter("checksum")
 	prometheusProcessedTime  = metrics.NewHistogram("processed_times")
 	prometheusCompletionTime = metrics.NewHistogram("completion_times")
 )
