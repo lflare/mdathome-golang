@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [2021-01-04] Added option for overriding port advertisement made to backend server by [@lflare].
 
 ### Changed
+- [2021-01-07] Heavily refactored Prometheus metric labels for clarity by [@lflare].
 
 ### Deprecated
 

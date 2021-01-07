@@ -70,19 +70,19 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Sanitized URL
 	if tokens["image_type"] != "data" && tokens["image_type"] != "data-saver" {
 		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid image type"}).Warnf("Request from %s dropped due to invalid image type", remoteAddr)
-		prometheusDropped.Inc()
+		clientDroppedTotal.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`^[0-9a-f]{32}$`, tokens["chapter_hash"]); !matched {
 		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid url format"}).Warnf("Request from %s dropped due to invalid url format", remoteAddr)
-		prometheusDropped.Inc()
+		clientDroppedTotal.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if matched, _ := regexp.MatchString(`^.+\.(jpg|jpeg|png|gif)$`, tokens["image_filename"]); !matched {
 		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid image extension"}).Warnf("Request from %s dropped due to invalid image extension", remoteAddr)
-		prometheusDropped.Inc()
+		clientDroppedTotal.Inc()
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -94,7 +94,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		if clientSettings.RejectInvalidTokens {
 			requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
 			w.WriteHeader(code)
-			prometheusDropped.Inc()
+			clientDroppedTotal.Inc()
 			return
 		}
 	}
@@ -122,13 +122,13 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Log request
 	requestLogger.WithFields(logrus.Fields{"event": "received"}).Infof("Request from %s received", remoteAddr)
-	prometheusRequests.Inc()
+	clientRequestsTotal.Inc()
 
 	// Check if browser token exists
 	if r.Header.Get("If-Modified-Since") != "" {
 		// Log browser cache
 		requestLogger.WithFields(logrus.Fields{"event": "cached"}).Debugf("Request from %s cached by browser", remoteAddr)
-		prometheusCached.Inc()
+		clientSkippedTotal.Inc()
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
@@ -158,7 +158,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 					// Compare hash
 					if givenHash != calculatedHash {
 						requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
-						prometheusChecksum.Inc()
+						clientCorruptedTotal.Inc()
 						ok = false
 					}
 				}
@@ -170,24 +170,25 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	if clientSettings.AllowVisitorRefresh && r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache ignored
 		requestLogger.WithFields(logrus.Fields{"event": "no-cache"}).Debugf("Request from %s ignored cache", remoteAddr)
-		prometheusForced.Inc()
+		clientRefreshedTotal.Inc()
 
 		// Set ok to false
 		ok = false
 	}
 
 	// Check if image exists and is a proper image and if cache-control is set
+	imageLength := 0
 	if !ok {
 		// Log cache miss
 		requestLogger.WithFields(logrus.Fields{"event": "miss"}).Debugf("Request from %s missed cache", remoteAddr)
-		prometheusMiss.Inc()
+		clientMissedTotal.Inc()
 		w.Header().Set("X-Cache", "MISS")
 
 		// Send request
 		imageFromUpstream, err := client.Get(serverResponse.ImageServer + sanitizedURL)
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed upstream: %v", remoteAddr, err)
-			prometheusFailed.Inc()
+			clientFailedTotal.Inc()
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -196,7 +197,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// If not 200
 		if imageFromUpstream.StatusCode != 200 {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": "received non-200 status code", "status": imageFromUpstream.StatusCode}).Warnf("Request from %s failed upstream: %d", remoteAddr, imageFromUpstream.StatusCode)
-			prometheusFailed.Inc()
+			clientFailedTotal.Inc()
 			w.WriteHeader(imageFromUpstream.StatusCode)
 			return
 		}
@@ -220,8 +221,8 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
-		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
-		prometheusProcessedTime.Update(float64(processedTime))
+		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken_ms": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
+		clientRequestProcessSeconds.Update(float64(processedTime) / 1000.0)
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
 		// Copy request to response body
@@ -231,7 +232,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Check if image was streamed properly
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed downstream: %v", remoteAddr, err)
-			prometheusFailed.Inc()
+			clientFailedTotal.Inc()
 			return
 		}
 
@@ -239,27 +240,32 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		err = cache.Set(sanitizedURL, modTime, imageBuffer.Bytes())
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "error": err}).Warnf("Request from %s failed to save: %v", remoteAddr, err)
-			prometheusFailed.Inc()
+			clientFailedTotal.Inc()
 		}
+
+		// Update bytes downloaded
+		imageLength = len(imageBuffer.Bytes())
+		clientDownloadedBytesTotal.Add(imageLength)
+		requestLogger.WithFields(logrus.Fields{"event": "committed", "image_length": imageLength}).Debug("Request from %s committed with size %d bytes", imageLength)
 	} else {
 		// Get length
-		length := len(imageFromCache)
-		image := make([]byte, length)
+		imageLength = len(imageFromCache)
+		image := make([]byte, imageLength)
 		copy(image, imageFromCache)
 
 		// Log cache hit
 		requestLogger.WithFields(logrus.Fields{"event": "hit"}).Debugf("Request from %s hit cache", remoteAddr)
-		prometheusHit.Inc()
+		clientHitsTotal.Inc()
 		w.Header().Set("X-Cache", "HIT")
 
 		// Set Content-Length & Last-Modified
-		w.Header().Set("Content-Length", strconv.Itoa(length))
+		w.Header().Set("Content-Length", strconv.Itoa(imageLength))
 		w.Header().Set("Last-Modified", modTime.Format(http.TimeFormat))
 
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
-		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
-		prometheusProcessedTime.Update(float64(processedTime))
+		requestLogger.WithFields(logrus.Fields{"event": "processed", "time_taken_ms": processedTime}).Tracef("Request from %s processed in %dms", remoteAddr, processedTime)
+		clientRequestProcessSeconds.Update(float64(processedTime) / 1000.0)
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
 		// Convert bytes object into reader and send to client
@@ -269,16 +275,19 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Check if image was streamed properly
 		if err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "failed", "upstream": serverResponse.ImageServer + sanitizedURL, "error": err}).Warnf("Request from %s failed downstream: %v", remoteAddr, err)
-			prometheusFailed.Inc()
+			clientFailedTotal.Inc()
 			return
 		}
 	}
 
 	// End time
 	totalTime := time.Since(startTime).Milliseconds()
-	requestLogger.WithFields(logrus.Fields{"event": "completed", "time_taken": totalTime}).Tracef("Request from %s completed in %dms", remoteAddr, totalTime)
-	prometheusCompletionTime.Update(float64(totalTime))
+	requestLogger.WithFields(logrus.Fields{"event": "completed", "time_taken_ms": totalTime, "image_length": imageLength}).Tracef("Request from %s completed in %dms and %d bytes", remoteAddr, totalTime, imageLength)
+	clientRequestDurationSeconds.Update(float64(totalTime) / 1000.0)
 	w.Header().Set("X-Time-Taken", strconv.Itoa(int(totalTime)))
+
+	// Update bytes served to readers
+	clientServedBytesTotal.Add(imageLength)
 }
 
 // ShrinkDatabase initialises and shrinks the MD@Home database
