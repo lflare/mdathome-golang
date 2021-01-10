@@ -6,10 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2021-01-04] Added option for overriding port advertisement made to backend server by [@lflare].
 
 ### Changed
-- [2021-01-07] Heavily refactored Prometheus metric labels for clarity by [@lflare].
 
 ### Deprecated
 
@@ -18,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.8.0] - 2021-01-10
+### Added
+- [2021-01-04] Added option for overriding port advertisement made to backend server by [@lflare].
+- [2021-01-10] Added token whitelist for client specification compliance by [@lflare].
+- [2021-01-10] Updated to client specification version 20 by [@lflare].
+
+### Changed
+- [2021-01-07] Heavily refactored Prometheus metric labels for clarity by [@lflare].
 
 ## [v1.7.6] - 2021-01-04
 ### Fixed

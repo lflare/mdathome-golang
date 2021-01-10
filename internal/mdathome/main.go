@@ -87,15 +87,18 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if token is valid
-	code, err := verifyToken(tokens["token"], tokens["chapter_hash"])
-	if err != nil {
-		// Reject invalid tokens if we enabled it
-		if clientSettings.RejectInvalidTokens {
-			requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
-			w.WriteHeader(code)
-			clientDroppedTotal.Inc()
-			return
+	// If configured to reject invalid tokens
+	if clientSettings.RejectInvalidTokens {
+		// Check if it is a test chapter
+		if !isTestChapter(tokens["chapter_hash"]) {
+			// Verify token if checking for invalid token and not a test chapter
+			code, err := verifyToken(tokens["token"], tokens["chapter_hash"])
+			if err != nil {
+				requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
+				w.WriteHeader(code)
+				clientDroppedTotal.Inc()
+				return
+			}
 		}
 	}
 
