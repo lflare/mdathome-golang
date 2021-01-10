@@ -108,8 +108,8 @@ func backgroundWorker() {
 			serverResponse = *newServerResponse
 		}
 
-		// Wait 15 seconds
-		time.Sleep(15 * time.Second)
+		// Wait 30 seconds
+		time.Sleep(30 * time.Second)
 	}
 }
 

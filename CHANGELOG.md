@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- [2021-01-10] Increased interval of refresh & backend ping to 30 seconds by [@lflare].
 
 ### Deprecated
 
