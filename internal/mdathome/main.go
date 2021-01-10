@@ -37,7 +37,7 @@ var clientSettings = ClientSettings{
 	AllowVisitorRefresh:     false, // Default to not allow visitors to force-refresh images through Cache-Control
 	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
 	OverrideUpstream:        "",    // Default to nil to follow upstream by controller
-	RejectInvalidTokens:     false, // Default to not reject invalid tokens
+	RejectInvalidTokens:     true,  // Default to reject invalid tokens
 	VerifyImageIntegrity:    false, // Default to not verify image integrity
 
 	LogLevel:              "trace", // Default to "trace" for all logs
