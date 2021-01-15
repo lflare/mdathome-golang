@@ -253,8 +253,6 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Get length
 		imageLength = len(imageFromCache)
-		image := make([]byte, imageLength)
-		copy(image, imageFromCache)
 
 		// Log cache hit
 		requestLogger.WithFields(logrus.Fields{"event": "hit"}).Debugf("Request from %s hit cache", remoteAddr)
@@ -272,7 +270,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
 		// Convert bytes object into reader and send to client
-		imageReader := bytes.NewReader(image)
+		imageReader := bytes.NewReader(imageFromCache)
 		_, err := io.Copy(w, imageReader)
 
 		// Check if image was streamed properly

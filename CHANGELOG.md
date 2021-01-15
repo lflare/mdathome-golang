@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 ### Removed
+- [2021-01-15] Removed intermediary and stream image direct from cache to visitor by [@lflare].
 
 ### Fixed
 
