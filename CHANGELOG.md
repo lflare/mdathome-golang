@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- [2021-01-21] Adjusted logging of diskcache by [@lflare].
 
 ### Deprecated
 

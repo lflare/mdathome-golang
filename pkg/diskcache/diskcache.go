@@ -161,12 +161,12 @@ func (c *Cache) StartBackgroundThread() {
 		}
 
 		// Log
-		log.Infof("Current diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
+		log.Warnf("Current diskcache size: %s, limit: %s, usage: %0.2f", ByteCountIEC(size), ByteCountIEC(c.cacheLimit), size/c.cacheLimit)
 
 		// If size is bigger than configured byte limit, keep deleting last recently used files
 		if size > c.cacheLimit {
 			// Get ready to shrink cache
-			log.Infof("Shrinking diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
+			log.Warnf("Shrinking diskcache size: %s, limit: %s", ByteCountIEC(size), ByteCountIEC(c.cacheLimit))
 			deletedSize := 0
 			deletedItems := 0
 
