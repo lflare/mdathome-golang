@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - [2021-01-10] Increased interval of refresh & backend ping to 30 seconds by [@lflare].
 - [2021-01-10] Comply with specification version 20 and default to verify tokens by [@lflare].
+- [2021-01-10] Decreased interval of refresh and server ping back to 10 seconds by [@lflare].
 
 ### Deprecated
 

@@ -77,9 +77,9 @@ func checkClientVersion() {
 }
 
 func backgroundWorker() {
-	// Wait 15 seconds
+	// Wait 10 seconds
 	log.Println("Starting background jobs!")
-	time.Sleep(15 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	for running {
 		// Reload client configuration
@@ -108,8 +108,8 @@ func backgroundWorker() {
 			serverResponse = *newServerResponse
 		}
 
-		// Wait 30 seconds
-		time.Sleep(30 * time.Second)
+		// Wait 10 seconds
+		time.Sleep(10 * time.Second)
 	}
 }
 
