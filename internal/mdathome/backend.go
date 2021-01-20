@@ -20,7 +20,7 @@ func backendPing() *ServerResponse {
 		TLSCreatedAt: nil,
 	}
 
-	// Check if we are overridding reported port
+	// Check if we are overriding reported port
 	if clientSettings.OverridePortReport != 0 {
 		settings.Port = clientSettings.OverridePortReport
 	}
