@@ -6,21 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2021-01-10] Allow overriding of reported address to backend by [@lflare].
 
 ### Changed
-- [2021-01-10] Increased interval of refresh & backend ping to 30 seconds by [@lflare].
-- [2021-01-10] Comply with specification version 20 and default to verify tokens by [@lflare].
-- [2021-01-10] Decreased interval of refresh and server ping back to 10 seconds by [@lflare].
 
 ### Deprecated
 
 ### Removed
-- [2021-01-15] Removed intermediary and stream image direct from cache to visitor by [@lflare].
 
 ### Fixed
 
 ### Security
+
+## [v1.8.1] - 2021-01-10
+### Added
+- [2021-01-20] Allow overriding of reported address to backend by [@lflare].
+
+### Changed
+- [2021-01-10] Increased interval of refresh & backend ping to 30 seconds by [@lflare].
+- [2021-01-10] Comply with specification version 20 and default to verify tokens by [@lflare].
+- [2021-01-20] Decreased interval of refresh and server ping back to 10 seconds by [@lflare].
+
+### Removed
+- [2021-01-15] Removed intermediary and stream image direct from cache to visitor by [@lflare].
 
 ## [v1.8.0] - 2021-01-10
 ### Added
