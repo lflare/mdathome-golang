@@ -22,6 +22,7 @@ var clientSettings = ClientSettings{
 	CacheDirectory:            "cache/", // Default cache directory
 	ClientPort:                443,      // Default to listen for requests on port 443
 	OverridePortReport:        0,        // Default to advertise for port 443
+	OverrideAddressReport:     "",       // Default to not overriding address report
 	GracefulShutdownInSeconds: 300,      // Default 5m graceful shutdown
 
 	MaxKilobitsPerSecond:       10000, // Default 10Mbps

@@ -25,6 +25,11 @@ func backendPing() *ServerResponse {
 		settings.Port = clientSettings.OverridePortReport
 	}
 
+	// Check if we are overriding reported address
+	if clientSettings.OverrideAddressReport != "" {
+		settings.IPAddress = clientSettings.OverrideAddressReport
+	}
+
 	// Marshal JSON
 	settingsJSON, _ := json.Marshal(&settings)
 

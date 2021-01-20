@@ -5,6 +5,7 @@ type ClientSettings struct {
 	CacheDirectory            string `json:"cache_directory"`
 	ClientPort                int    `json:"client_port"`
 	OverridePortReport        int    `json:"override_port_report"`
+	OverrideAddressReport     string `json:"override_address_report"`
 	ClientSecret              string `json:"client_secret"`
 	GracefulShutdownInSeconds int    `json:"graceful_shutdown_in_seconds"`
 
@@ -39,6 +40,7 @@ type ServerRequest struct {
 type ServerSettings struct {
 	Secret       string  `json:"secret"`
 	Port         int     `json:"port"`
+	IPAddress    string  `json:"ip_address,omitempty"`
 	DiskSpace    int     `json:"disk_space"`
 	NetworkSpeed int     `json:"network_speed"`
 	BuildVersion int     `json:"build_version"`
