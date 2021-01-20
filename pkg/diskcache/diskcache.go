@@ -10,10 +10,13 @@ import (
 	"sort"
 	"time"
 
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
+var log *logrus.Logger
+var clientCacheSize *metrics.Counter
+var clientCacheLimit *metrics.Counter
 
 // DeleteFile takes an absolute path to a file and deletes it
 func (c *Cache) DeleteFile(file string) error {
@@ -131,6 +134,9 @@ func (c *Cache) Set(key string, mtime time.Time, resp []byte) error {
 		return err
 	}
 
+	// Update Prometheus metrics
+	clientCacheSize.Add(size)
+
 	// Return no error
 	return nil
 }
@@ -201,6 +207,10 @@ func (c *Cache) StartBackgroundThread() {
 			log.Infof("Successfully shrunk diskcache by: %s, %d items", ByteCountIEC(deletedSize), deletedItems)
 		}
 
+		// Update Prometheus metrics
+		clientCacheSize.Set(uint64(size))
+		clientCacheLimit.Set(uint64(c.cacheLimit))
+
 		// Sleep till next execution
 		time.Sleep(time.Duration(c.cacheScanInterval) * time.Second)
 	}
@@ -249,7 +259,7 @@ func getCacheKey(key string) (string, string) {
 }
 
 // New returns a new Cache that will store files in basePath
-func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAge int, maxCacheScanTime int, logger *logrus.Logger) *Cache {
+func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAge int, maxCacheScanTime int, logger *logrus.Logger, clientCacheSizeCounter *metrics.Counter, clientCacheLimitCounter *metrics.Counter) *Cache {
 	cache := Cache{
 		directory:         directory,
 		cacheLimit:        cacheLimit,
@@ -258,6 +268,8 @@ func New(directory string, cacheLimit int, cacheScanInterval int, cacheRefreshAg
 		maxCacheScanTime:  maxCacheScanTime,
 	}
 	log = logger
+	clientCacheSize = clientCacheSizeCounter
+	clientCacheLimit = clientCacheLimitCounter
 
 	// Setup BoltDB
 	err := cache.setupDB()
