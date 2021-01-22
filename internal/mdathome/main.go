@@ -339,7 +339,10 @@ func StartServer() {
 		IdleConnTimeout:   60 * time.Second,
 		DisableKeepAlives: !clientSettings.AllowUpstreamPooling,
 	}
-	client = &http.Client{Transport: tr}
+	client = &http.Client{
+		Transport: tr,
+		Timeout:   30 * time.Second,
+	}
 
 	// Register shutdown handler
 	serverShutdownHandler()
