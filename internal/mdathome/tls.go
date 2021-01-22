@@ -23,7 +23,7 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 		return
 	}
 
-	err = tc.SetKeepAlivePeriod(5 * time.Minute)
+	err = tc.SetKeepAlivePeriod(1 * time.Minute)
 	if err != nil {
 		return
 	}
@@ -39,8 +39,8 @@ func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      handler,
-		ReadTimeout:  1 * time.Minute,
-		WriteTimeout: 5 * time.Minute,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 1 * time.Minute,
 	}
 	config := &tls.Config{
 		PreferServerCipherSuites: true,
