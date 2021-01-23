@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -15,6 +16,7 @@ import (
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/gorilla/mux"
 	"github.com/lflare/mdathome-golang/pkg/diskcache"
+	"github.com/oschwald/geoip2-golang"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,6 +39,7 @@ var clientSettings = ClientSettings{
 	AllowUpstreamPooling:    true,  // Allow upstream pooling by default
 	AllowVisitorRefresh:     false, // Default to not allow visitors to force-refresh images through Cache-Control
 	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
+	PrometheusGeoIPDatabase: "",    // Default to not have any geoip database
 	OverrideUpstream:        "",    // Default to nil to follow upstream by controller
 	RejectInvalidTokens:     true,  // Default to reject invalid tokens
 	VerifyImageIntegrity:    false, // Default to not verify image integrity
@@ -51,6 +54,7 @@ var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
+var geodb *geoip2.Reader
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Start timer
@@ -67,6 +71,35 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare logger for request
 	requestLogger := log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer")})
+
+	// Parse GeoIP
+	labels := ""
+	if clientSettings.PrometheusGeoIPDatabase != "" {
+		ip := net.ParseIP(remoteAddr)
+		record, err := geodb.City(ip)
+		if err == nil && record.Country.IsoCode != "" {
+			labels = fmt.Sprintf(`{country=%q}`, record.Country.IsoCode)
+		}
+	}
+
+	// Create all metric counters
+	var (
+		clientHitsTotal      = metrics.GetOrCreateCounter(fmt.Sprintf("client_hits_total%s", labels))
+		clientMissedTotal    = metrics.GetOrCreateCounter(fmt.Sprintf("client_missed_total%s", labels))
+		clientRefreshedTotal = metrics.GetOrCreateCounter(fmt.Sprintf("client_refreshed_total%s", labels))
+		clientRequestsTotal  = metrics.GetOrCreateCounter(fmt.Sprintf("client_requests_total%s", labels))
+		clientSkippedTotal   = metrics.GetOrCreateCounter(fmt.Sprintf("client_skipped_total%s", labels))
+
+		clientDownloadedBytesTotal = metrics.GetOrCreateCounter(fmt.Sprintf("client_downloaded_bytes_total%s", labels))
+		clientServedBytesTotal     = metrics.GetOrCreateCounter(fmt.Sprintf("client_served_bytes_total%s", labels))
+
+		clientCorruptedTotal = metrics.GetOrCreateCounter(fmt.Sprintf("client_corrupted_total%s", labels))
+		clientDroppedTotal   = metrics.GetOrCreateCounter(fmt.Sprintf("client_dropped_total%s", labels))
+		clientFailedTotal    = metrics.GetOrCreateCounter(fmt.Sprintf("client_failed_total%s", labels))
+
+		clientRequestDurationSeconds = metrics.GetOrCreateHistogram(fmt.Sprintf("client_request_duration_seconds%s", labels))
+		clientRequestProcessSeconds  = metrics.GetOrCreateHistogram(fmt.Sprintf("client_request_process_seconds%s", labels))
+	)
 
 	// Sanitized URL
 	if tokens["image_type"] != "data" && tokens["image_type"] != "data-saver" {
@@ -332,6 +365,18 @@ func StartServer() {
 		clientCacheLimit,
 	)
 	defer cache.Close()
+
+	// Prepare geoip
+	if clientSettings.PrometheusGeoIPDatabase != "" {
+		var err error
+		geodb, err = geoip2.Open(clientSettings.PrometheusGeoIPDatabase)
+		if err != nil {
+			log.Fatalf("Unable to open database %s for geolocation: %v", clientSettings.PrometheusGeoIPDatabase, err)
+		}
+		log.Infof("Loaded GeoIP database")
+
+	}
+	defer geodb.Close()
 
 	// Prepare upstream client
 	tr := &http.Transport{

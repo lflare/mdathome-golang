@@ -11,6 +11,7 @@ require (
 	github.com/hashicorp/go-version v1.2.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.8
+	github.com/oschwald/geoip2-golang v1.4.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/snowzach/rotatefilehook v0.0.0-20180327172521-2f64f265f58c
 	github.com/stretchr/testify v1.6.1 // indirect

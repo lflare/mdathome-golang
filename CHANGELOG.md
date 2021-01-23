@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - [2021-01-21] Added Prometheus metrics of diskcache by [@lflare].
 - [2021-01-23] Added 15 seconds upstream timeout by [@lflare].
+- [2021-01-23] Added experimental geoip support to Prometheus metrics by [@lflare].
 
 ### Changed
 - [2021-01-21] Adjusted logging of diskcache by [@lflare].
