@@ -369,8 +369,11 @@ func StartServer() {
 			metrics.WritePrometheus(w, true)
 		})
 	}
+
+	// Prepare paths
 	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
 	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
+
 	http.Handle("/", r)
 
 	// Start proxy server
