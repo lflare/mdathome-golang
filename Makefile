@@ -21,13 +21,7 @@ ARCHITECTURES = 386 amd64 arm arm64
 LDFLAGS = -ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
 default:
-	export CGO_ENABLED=0
-	go build -o ./mdathome-golang -tags netgo -trimpath -ldflags '-s -w' ./cmd/mdathome
-	upx mdathome-golang
-
-local:
-	export CGO_ENABLED=0
-	go build -o ./mdathome-golang -tags netgo -trimpath -ldflags '-s -w' ./cmd/mdathome
+	CGO_ENABLED=0 go build -o ./mdathome-golang -tags netgo -trimpath -ldflags '-s -w' ./cmd/mdathome
 	upx mdathome-golang
 
 snapshot:
