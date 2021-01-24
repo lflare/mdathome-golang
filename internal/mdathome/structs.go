@@ -21,7 +21,7 @@ type ClientSettings struct {
 	AllowUpstreamPooling    bool   `json:"allow_upstream_pooling"`
 	AllowVisitorRefresh     bool   `json:"allow_visitor_refresh"`
 	EnablePrometheusMetrics bool   `json:"enable_prometheus_metrics"`
-	PrometheusGeoIPDatabase string `json:"prometheus_geoip_database"`
+	MaxMindLicenseKey       string `json:"maxmind_license_key"`
 	OverrideUpstream        string `json:"override_upstream"`
 	RejectInvalidTokens     bool   `json:"reject_invalid_tokens"`
 	VerifyImageIntegrity    bool   `json:"verify_image_integrity"`

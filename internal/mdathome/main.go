@@ -16,7 +16,6 @@ import (
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/gorilla/mux"
 	"github.com/lflare/mdathome-golang/pkg/diskcache"
-	"github.com/oschwald/geoip2-golang"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,7 +38,7 @@ var clientSettings = ClientSettings{
 	AllowUpstreamPooling:    true,  // Allow upstream pooling by default
 	AllowVisitorRefresh:     false, // Default to not allow visitors to force-refresh images through Cache-Control
 	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
-	PrometheusGeoIPDatabase: "",    // Default to not have any geoip database
+	MaxMindLicenseKey:       "",    // Default to not have any MaxMind Geolocation DB
 	OverrideUpstream:        "",    // Default to nil to follow upstream by controller
 	RejectInvalidTokens:     true,  // Default to reject invalid tokens
 	VerifyImageIntegrity:    false, // Default to not verify image integrity
@@ -54,7 +53,6 @@ var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
-var geodb *geoip2.Reader
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Start timer
@@ -74,7 +72,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse GeoIP
 	labels := ""
-	if clientSettings.PrometheusGeoIPDatabase != "" {
+	if geodb != nil {
 		ip := net.ParseIP(remoteAddr)
 		record, err := geodb.City(ip)
 		if err == nil && record.Country.IsoCode != "" {
@@ -367,16 +365,11 @@ func StartServer() {
 	defer cache.Close()
 
 	// Prepare geoip
-	if clientSettings.PrometheusGeoIPDatabase != "" {
-		var err error
-		geodb, err = geoip2.Open(clientSettings.PrometheusGeoIPDatabase)
-		if err != nil {
-			log.Fatalf("Unable to open database %s for geolocation: %v", clientSettings.PrometheusGeoIPDatabase, err)
-		}
-		log.Infof("Loaded GeoIP database")
-
+	if clientSettings.MaxMindLicenseKey != "" {
+		log.Warnf("Loading geolocation data in the background...")
+		go prepareGeoIPDatabase()
+		defer geodb.Close()
 	}
-	defer geodb.Close()
 
 	// Prepare upstream client
 	tr := &http.Transport{
