@@ -1,7 +1,7 @@
 package mdathome
 
 // Client settings
-const clientVersion string = "v1.8.1"
+const clientVersion string = "v1.9.0"
 const specVersion int = 20
 
 // Backend settings (Swap to use testnet)

@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [v1.9.0] - 2021-01-24
+### Added
 - [2021-01-21] Added Prometheus metrics of diskcache by [@lflare].
 - [2021-01-23] Added 15 seconds upstream timeout by [@lflare].
 - [2021-01-23] Added experimental geoip support to Prometheus metrics by [@lflare].
@@ -15,14 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [2021-01-23] Made server read/write timeouts more aggresive with 30s and 1m respectively by [@lflare].
 - [2021-01-23] Properly pre-processed IP address to only log IP addresses without ports by [@lflare].
 - [2021-01-24] Reworked for auto-downloading of MaxMind databases for geolocation by [@lflare].
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [v1.8.1] - 2021-01-10
 ### Added
