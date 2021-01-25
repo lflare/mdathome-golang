@@ -62,16 +62,16 @@ func checkClientVersion() {
 	}
 
 	// Check if client is latest
-	res, err := latest.Check(githubTag, clientVersion)
+	res, err := latest.Check(githubTag, ClientVersion)
 	if err != nil {
-		log.Printf("Failed to check client version %s? Proceed with caution!", clientVersion)
+		log.Printf("Failed to check client version %s? Proceed with caution!", ClientVersion)
 	} else {
 		if res.Outdated {
-			log.Printf("Client %s is not the latest! You should update to the latest version %s now!", clientVersion, res.Current)
+			log.Printf("Client %s is not the latest! You should update to the latest version %s now!", ClientVersion, res.Current)
 			log.Printf("Client starting in 10 seconds...")
 			time.Sleep(10 * time.Second)
 		} else {
-			log.Printf("Client %s is latest! Starting client!", clientVersion)
+			log.Printf("Client %s is latest! Starting client!", ClientVersion)
 		}
 	}
 }

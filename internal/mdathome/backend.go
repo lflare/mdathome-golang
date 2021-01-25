@@ -16,7 +16,7 @@ func backendPing() *ServerResponse {
 		Port:         clientSettings.ClientPort,
 		DiskSpace:    clientSettings.MaxReportedSizeInMebibytes * 1024 * 1024, // 1GB
 		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,          // 100Mbps
-		BuildVersion: specVersion,
+		BuildVersion: ClientSpecification,
 		TLSCreatedAt: nil,
 	}
 
