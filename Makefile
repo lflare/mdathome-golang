@@ -12,7 +12,7 @@ ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 MAKEFILE := $(lastword $(MAKEFILE_LIST))
 
 BINARY = mdathome-golang
-VERSION = $(shell git describe --tag --dirty)
+VERSION = $(shell git describe --tag | cut -d '-' -f -2 | tr '-' '.')
 BUILD = $(shell git rev-parse HEAD)
 PLATFORMS = linux windows
 ARCHITECTURES = 386 amd64 arm arm64
