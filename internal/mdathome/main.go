@@ -42,6 +42,7 @@ var clientSettings = ClientSettings{
 	OverrideUpstream:        "",    // Default to nil to follow upstream by controller
 	RejectInvalidTokens:     true,  // Default to reject invalid tokens
 	VerifyImageIntegrity:    false, // Default to not verify image integrity
+	LowMemoryMode:           false, // Default to not doing low-memory mode
 
 	LogLevel:              "trace", // Default to "trace" for all logs
 	MaxLogSizeInMebibytes: 64,      // Default to maximum log size of 64MiB
@@ -178,34 +179,32 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Close image file at the end of goroutine
 		defer imageFile.Close()
 
-		// Check SHA256 hash if exists in URL (might be computationally heavy)
-		if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
-			subTokens := strings.Split(tokens["image_filename"], "-")
-			if len(subTokens) == 2 {
-				// Check given hash length
-				givenHash := strings.Split(subTokens[1], ".")[0]
-				if len(givenHash) == 64 {
-					// Setup separate byte buffer to use after image hash verification
-					imageBuffer.Grow(int(imageSize))
-					teeReader := io.TeeReader(imageFile, &imageBuffer)
+		// Check if client is running in low-memory mode
+		if !clientSettings.LowMemoryMode {
+			// Load image from disk to buffer if not low-memory mode
+			imageBuffer.Grow(int(imageSize))
+			io.Copy(&imageBuffer, imageFile)
 
-					// Hash through file
-					h := sha256.New()
-					if _, err := io.Copy(h, teeReader); err != nil {
-						log.Fatal(err)
-					}
+			// Check if verifying image integrity
+			if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
+				// Check and get hash from image filename
+				subTokens := strings.Split(tokens["image_filename"], "-")
+				if len(subTokens) == 2 {
+					// Check and get given hash length
+					givenHash := strings.Split(subTokens[1], ".")[0]
+					if len(givenHash) == 64 {
+						// Calculate actual image hash
+						calculatedHash := fmt.Sprintf("%x", sha256.Sum256(imageBuffer.Bytes()))
 
-					// Get hash checksum
-					calculatedHash := fmt.Sprintf("%x", h.Sum(nil))
+						// Compare hash
+						if givenHash != calculatedHash {
+							// Log cache corrupted
+							requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
+							clientCorruptedTotal.Inc()
 
-					// Compare hash
-					if givenHash != calculatedHash {
-						// Log cache corrupted
-						requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
-						clientCorruptedTotal.Inc()
-
-						// Set imageOk to false
-						imageOk = false
+							// Set imageOk to false
+							imageOk = false
+						}
 					}
 				}
 			}

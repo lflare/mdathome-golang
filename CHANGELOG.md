@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- [2021-01-28] Added low-memory mode option to stream images straight from disk by [@lflare].
 
 ### Changed
 - [2021-01-28] Reworked diskcache to stream files more efficiently by [@lflare].
