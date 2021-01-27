@@ -76,7 +76,7 @@ func checkClientVersion() {
 	}
 }
 
-func backgroundWorker() {
+func startBackgroundWorker() {
 	// Wait 10 seconds
 	log.Println("Starting background jobs!")
 	time.Sleep(10 * time.Second)
@@ -113,7 +113,7 @@ func backgroundWorker() {
 	}
 }
 
-func serverShutdownHandler() {
+func registerShutdownHandler() {
 	// Hook on to SIGTERM
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

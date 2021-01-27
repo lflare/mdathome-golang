@@ -364,7 +364,7 @@ func StartServer() {
 	)
 	defer cache.Close()
 
-	// Prepare geoip
+	// Prepare MaxMind geolocation database
 	if clientSettings.MaxMindLicenseKey != "" {
 		log.Warnf("Loading geolocation data in the background...")
 		go prepareGeoIPDatabase()
@@ -372,49 +372,51 @@ func StartServer() {
 	}
 
 	// Prepare upstream client
-	tr := &http.Transport{
-		MaxIdleConns:      10,
-		IdleConnTimeout:   60 * time.Second,
-		DisableKeepAlives: !clientSettings.AllowUpstreamPooling,
-	}
 	client = &http.Client{
-		Transport: tr,
-		Timeout:   30 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:      10,
+			IdleConnTimeout:   60 * time.Second,
+			DisableKeepAlives: !clientSettings.AllowUpstreamPooling,
+		},
+		Timeout: 30 * time.Second,
 	}
 
 	// Register shutdown handler
-	serverShutdownHandler()
+	registerShutdownHandler()
 
-	// Retrieve TLS certificates
+	// Retrieve TLS certificate
 	serverResponse = *backendPing()
 	if serverResponse.TLS.Certificate == "" {
 		log.Fatalln("Unable to contact API server!")
 	}
 
-	// Attempt to parse TLS data
+	// Parse TLS certificate
 	keyPair, err := tls.X509KeyPair([]byte(serverResponse.TLS.Certificate), []byte(serverResponse.TLS.PrivateKey))
 	if err != nil {
 		log.Fatalf("Cannot parse TLS data %v - %v", serverResponse, err)
 	}
 
 	// Start background worker
-	go backgroundWorker()
+	go startBackgroundWorker()
 
-	// Prepare server
+	// Prepare router
 	r := mux.NewRouter()
+
+	// Prepare paths
+	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
+	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
+
+	// Handle Prometheus metrics
 	if clientSettings.EnablePrometheusMetrics {
 		r.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
 			metrics.WritePrometheus(w, true)
 		})
 	}
 
-	// Prepare paths
-	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
-	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
-
+	// Set router
 	http.Handle("/", r)
 
-	// Start proxy server
+	// Start server
 	err = listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, keyPair, r)
 	if err != nil {
 		log.Fatalf("Cannot start server: %v", err)
