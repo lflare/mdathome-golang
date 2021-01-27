@@ -168,17 +168,15 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load cache
-	imageFromCache, modTime, err := cache.Get(sanitizedURL)
+	// Load image from cache
+	imageFile, imageSize, imageModTime, err := cache.Get(sanitizedURL)
 
 	// Check image integrity if found in cache
-	ok := (err == nil)
-	if ok {
-		// Check image content type
-		contentType := http.DetectContentType(imageFromCache)
-		if !strings.Contains(contentType, "image") {
-			ok = false
-		}
+	var imageBuffer bytes.Buffer
+	imageOk := (err == nil)
+	if imageOk {
+		// Close image file at the end of goroutine
+		defer imageFile.Close()
 
 		// Check SHA256 hash if exists in URL (might be computationally heavy)
 		if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
@@ -187,14 +185,27 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 				// Check given hash length
 				givenHash := strings.Split(subTokens[1], ".")[0]
 				if len(givenHash) == 64 {
-					// Calculate hash
-					calculatedHash := fmt.Sprintf("%x", sha256.Sum256(imageFromCache))
+					// Setup separate byte buffer to use after image hash verification
+					imageBuffer.Grow(int(imageSize))
+					teeReader := io.TeeReader(imageFile, &imageBuffer)
+
+					// Hash through file
+					h := sha256.New()
+					if _, err := io.Copy(h, teeReader); err != nil {
+						log.Fatal(err)
+					}
+
+					// Get hash checksum
+					calculatedHash := fmt.Sprintf("%x", h.Sum(nil))
 
 					// Compare hash
 					if givenHash != calculatedHash {
+						// Log cache corrupted
 						requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
 						clientCorruptedTotal.Inc()
-						ok = false
+
+						// Set imageOk to false
+						imageOk = false
 					}
 				}
 			}
@@ -207,13 +218,13 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		requestLogger.WithFields(logrus.Fields{"event": "no-cache"}).Debugf("Request from %s ignored cache", remoteAddr)
 		clientRefreshedTotal.Inc()
 
-		// Set ok to false
-		ok = false
+		// Set imageOk to false
+		imageOk = false
 	}
 
 	// Check if image exists and is a proper image and if cache-control is set
 	imageLength := 0
-	if !ok {
+	if !imageOk {
 		// Log cache miss
 		requestLogger.WithFields(logrus.Fields{"event": "miss"}).Debugf("Request from %s missed cache", remoteAddr)
 		clientMissedTotal.Inc()
@@ -284,7 +295,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		requestLogger.WithFields(logrus.Fields{"event": "committed", "image_length": imageLength}).Debug("Request from %s committed with size %d bytes", remoteAddr, imageLength)
 	} else {
 		// Get length
-		imageLength = len(imageFromCache)
+		imageLength = int(imageSize)
 
 		// Log cache hit
 		requestLogger.WithFields(logrus.Fields{"event": "hit"}).Debugf("Request from %s hit cache", remoteAddr)
@@ -293,7 +304,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Set Content-Length & Last-Modified
 		w.Header().Set("Content-Length", strconv.Itoa(imageLength))
-		w.Header().Set("Last-Modified", modTime.Format(http.TimeFormat))
+		w.Header().Set("Last-Modified", imageModTime.Format(http.TimeFormat))
 
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
@@ -301,9 +312,14 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		clientRequestProcessSeconds.Update(float64(processedTime) / 1000.0)
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
-		// Convert bytes object into reader and send to client
-		imageReader := bytes.NewReader(imageFromCache)
-		_, err := io.Copy(w, imageReader)
+		// Stream image to client
+		var err error
+		if imageBuffer.Len() == 0 {
+			_, err = io.Copy(w, imageFile)
+		} else {
+			imageReader := bytes.NewReader(imageBuffer.Bytes())
+			_, err = io.Copy(w, imageReader)
+		}
 
 		// Check if image was streamed properly
 		if err != nil {
