@@ -3,6 +3,7 @@ module github.com/lflare/mdathome-golang
 go 1.14
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/VictoriaMetrics/metrics v1.12.3
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
