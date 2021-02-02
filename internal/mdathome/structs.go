@@ -58,13 +58,14 @@ type TLSCert struct {
 
 // ServerResponse stores a representation of the response given by the `/ping` backend
 type ServerResponse struct {
-	ImageServer string  `json:"image_server"`
-	URL         string  `json:"url"`
-	TokenKey    string  `json:"token_key"`
-	Paused      bool    `json:"paused"`
-	Compromised bool    `json:"compromised"`
-	LatestBuild int     `json:"latest_build"`
-	TLS         TLSCert `json:"tls"`
+	ImageServer   string  `json:"image_server"`
+	LatestBuild   int     `json:"latest_build"`
+	URL           string  `json:"url"`
+	TokenKey      string  `json:"token_key"`
+	Compromised   bool    `json:"compromised"`
+	Paused        bool    `json:"paused"`
+	DisableTokens bool    `json:"disable_tokens"`
+	TLS           TLSCert `json:"tls"`
 }
 
 // Token stores a representation of a token hash issued by the backend

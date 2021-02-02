@@ -121,7 +121,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// If configured to reject invalid tokens
-	if clientSettings.RejectInvalidTokens {
+	if clientSettings.RejectInvalidTokens && !serverResponse.DisableTokens {
 		// Check if it is a test chapter
 		if !isTestChapter(tokens["chapter_hash"]) {
 			// Verify token if checking for invalid token and not a test chapter

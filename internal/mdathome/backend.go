@@ -62,7 +62,9 @@ func backendPing() *ServerResponse {
 	log.Printf("Server settings received! - %s...", string(response[:tlsIndex]))
 
 	// Decode & unmarshal server response
-	newServerResponse := ServerResponse{}
+	newServerResponse := ServerResponse{
+		DisableTokens: false, // Default to not force disabling tokens
+	}
 	err = json.Unmarshal(response, &newServerResponse)
 	if err != nil {
 		log.Printf("Failed to ping control server: %v", err)
