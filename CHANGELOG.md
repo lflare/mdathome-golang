@@ -6,14 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2021-01-28] Added low-memory mode option to stream images straight from disk by [@lflare].
-- [2021-02-02] Added back ALL THE COMPILATIONS by [@lflare].
 
 ### Changed
-- [2021-01-28] Reworked diskcache to stream files more efficiently by [@lflare].
-- [2021-02-02] Added `disable_tokens` handling from backend by [@lflare].
-- [2021-02-02] Updated to client specification 23 by [@lflare].
-- [2021-02-02] Lowered startup delay to 5 seconds on older versions of client by [@lflare].
 
 ### Deprecated
 
@@ -22,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.9.1] - 2021-02-02
+### Added
+- [2021-01-28] Added low-memory mode option to stream images straight from disk by [@lflare].
+- [2021-02-02] Added back ALL THE COMPILATIONS by [@lflare].
+
+### Changed
+- [2021-01-28] Reworked diskcache to stream files more efficiently by [@lflare].
+- [2021-02-02] Added `disable_tokens` handling from backend by [@lflare].
+- [2021-02-02] Updated to client specification 23 by [@lflare].
+- [2021-02-02] Lowered startup delay to 5 seconds on older versions of client by [@lflare].
 
 ## [v1.9.0] - 2021-01-24
 ### Added
