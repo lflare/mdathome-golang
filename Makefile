@@ -22,12 +22,12 @@ LDFLAGS = "-X github.com/lflare/mdathome-golang/internal/mdathome.ClientVersion=
 
 default:
 	CGO_ENABLED=0 go build -o ./mdathome-golang -tags netgo -trimpath -ldflags=${LDFLAGS} ./cmd/mdathome
-	upx mdathome-golang
+	upx -qq mdathome-golang
 
 snapshot:
 	LDFLAGS=${LDFLAGS} goreleaser build --rm-dist --snapshot
-	upx build/mdathome-*
+	find 'build/' -name 'mdathome-*' | xargs -n 1 upx -qq
 
 all:
 	LDFLAGS=${LDFLAGS} goreleaser build --rm-dist
-	upx build/mdathome-*
+	find 'build/' -name 'mdathome-*' | xargs -n 1 upx -qq
