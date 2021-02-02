@@ -68,8 +68,8 @@ func checkClientVersion() {
 	} else {
 		if res.Outdated {
 			log.Printf("Client %s is not the latest! You should update to the latest version %s now!", ClientVersion, res.Current)
-			log.Printf("Client starting in 10 seconds...")
-			time.Sleep(10 * time.Second)
+			log.Printf("Client starting in 5 seconds...")
+			time.Sleep(5 * time.Second)
 		} else {
 			log.Printf("Client %s is latest! Starting client!", ClientVersion)
 		}

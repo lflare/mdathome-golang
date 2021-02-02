@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [2021-01-28] Reworked diskcache to stream files more efficiently by [@lflare].
 - [2021-02-02] Added `disable_tokens` handling from backend by [@lflare].
 - [2021-02-02] Updated to client specification 23 by [@lflare].
+- [2021-02-02] Lowered startup delay to 5 seconds on older versions of client by [@lflare].
 
 ### Deprecated
 
