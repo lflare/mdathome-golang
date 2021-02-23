@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- [2021-02-13] Updated README.md with more up-to-date instructions by [@lflare].
 
 ### Deprecated
 
@@ -17,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.9.2] - 2021-02-25
+### Changed
+- [2021-02-13] Updated README.md with more up-to-date instructions by [@lflare].
+- [2021-02-25] Recompiled with Golang v1.16 by [@lflare].
 
 ## [v1.9.1] - 2021-02-02
 ### Added
