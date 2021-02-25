@@ -291,7 +291,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Update bytes downloaded
 		imageLength = len(imageBuffer.Bytes())
 		clientDownloadedBytesTotal.Add(imageLength)
-		requestLogger.WithFields(logrus.Fields{"event": "committed", "image_length": imageLength}).Debug("Request from %s committed with size %d bytes", remoteAddr, imageLength)
+		requestLogger.WithFields(logrus.Fields{"event": "committed", "image_length": imageLength}).Debugf("Request from %s committed with size %d bytes", remoteAddr, imageLength)
 	} else {
 		// Get length
 		imageLength = int(imageSize)
