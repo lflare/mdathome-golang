@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- [2021-02-28] Updated `go.mod` with Golang 1.16 by [@lflare].
 
 ### Deprecated
 
