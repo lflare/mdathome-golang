@@ -2,8 +2,10 @@ package mdathome
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 )
@@ -33,8 +35,17 @@ func backendPing() *ServerResponse {
 	// Marshal JSON
 	settingsJSON, _ := json.Marshal(&settings)
 
+	// Prepare backend client
+	client = &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return net.Dial("tcp4", addr)
+			},
+		},
+	}
+
 	// Ping backend server
-	r, err := http.Post(apiBackend+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
+	r, err := client.Post(apiBackend+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
 	if err != nil {
 		log.Printf("Failed to ping control server: %v", err)
 		return nil

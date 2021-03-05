@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [2021-02-25] Fixed missing `f` thanks to LittleEndu by [@lflare].
+- [2021-03-05] Fixed IPv6 issue with backend communication by [@lflare].
 
 ### Security
 
