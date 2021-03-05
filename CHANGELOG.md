@@ -8,17 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- [2021-02-28] Updated `go.mod` with Golang 1.16 by [@lflare].
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- [2021-02-25] Fixed missing `f` thanks to LittleEndu by [@lflare].
-- [2021-03-05] Fixed IPv6 issue with backend communication by [@lflare].
 
 ### Security
+
+## [v1.9.3] - 2021-03-05
+### Changed
+- [2021-02-28] Updated `go.mod` with Golang 1.16 by [@lflare].
+
+### Fixed
+- [2021-02-25] Fixed missing `f` thanks to LittleEndu by [@lflare].
+- [2021-03-05] Fixed IPv6 issue with backend communication by [@lflare].
 
 ## [v1.9.2] - 2021-02-25
 ### Changed
