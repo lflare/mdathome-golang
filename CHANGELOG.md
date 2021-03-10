@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- [2021-03-11] Added more logging fields in JSON structure by [@lflare].
 
 ### Deprecated
 

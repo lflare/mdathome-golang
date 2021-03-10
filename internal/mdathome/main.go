@@ -138,6 +138,9 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Create sanitized url if everything checks out
 	sanitizedURL := "/" + tokens["image_type"] + "/" + tokens["chapter_hash"] + "/" + tokens["image_filename"]
 
+	// Update requestLogger with new fields
+	requestLogger = log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer"), "token": tokens["token"], "image_type": tokens["image_type"], "chapter_hash": tokens["chapter_hash"], "filename": tokens["image_filename"]})
+
 	// Update last request
 	timeLastRequest = time.Now()
 
