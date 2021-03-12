@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - [2021-03-11] Added more logging fields in JSON structure by [@lflare].
+- [2021-03-12] Updated to client specification 30 by [@lflare].
 
 ### Deprecated
 
 ### Removed
+- [2021-03-12] Removed test chapter exemptions by [@lflare].
 
 ### Fixed
 
