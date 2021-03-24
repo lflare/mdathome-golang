@@ -4,7 +4,7 @@
 # ########################################################## #
 
 # Check for required command tools to build or stop immediately
-EXECUTABLES = git go find pwd
+EXECUTABLES = git go find pwd upx
 K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH)))
 
