@@ -45,7 +45,7 @@ func backendPing() *ServerResponse {
 	}
 
 	// Ping backend server
-	r, err := client.Post(apiBackend+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
+	r, err := client.Post(clientSettings.APIBackend+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
 	if err != nil {
 		log.Printf("Failed to ping control server: %v", err)
 		return nil
@@ -98,7 +98,7 @@ func backendShutdown() {
 		Secret: clientSettings.ClientSecret,
 	}
 	requestJSON, _ := json.Marshal(&request)
-	r, err := http.Post(apiBackend+"/stop", "application/json", bytes.NewBuffer(requestJSON))
+	r, err := http.Post(clientSettings.APIBackend+"/stop", "application/json", bytes.NewBuffer(requestJSON))
 	if err != nil {
 		log.Fatalf("Failed to shutdown server gracefully: %v", err)
 	}
