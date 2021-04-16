@@ -33,7 +33,7 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 
 func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate, handler http.Handler) error {
 	if addr == "" {
-		return errors.New("Invalid address string")
+		return errors.New("invalid address string")
 	}
 
 	server := &http.Server{

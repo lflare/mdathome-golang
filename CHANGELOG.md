@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - [2021-04-16] Made API backend configurable by [@lflare].
 
+### Fixed
+- [2021-04-16] Redid project linting and formatting guidelines with staticcheck by [@lflare].
+
 ## [v1.10.0] - 2021-03-18
 ### Changed
 - [2021-03-11] Added more logging fields in JSON structure by [@lflare].
