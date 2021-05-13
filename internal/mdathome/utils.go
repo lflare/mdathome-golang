@@ -19,7 +19,7 @@ func saveClientSettings() {
 		log.Fatalln("Failed to marshal sample settings.json")
 	}
 
-	err = ioutil.WriteFile("settings.json", clientSettingsSampleBytes, 0600)
+	err = ioutil.WriteFile(ConfigFilePath, clientSettingsSampleBytes, 0600)
 	if err != nil {
 		log.Fatalf("Failed to create sample settings.json: %v", err)
 	}
@@ -27,7 +27,7 @@ func saveClientSettings() {
 
 func loadClientSettings() {
 	// Read JSON from file
-	clientSettingsJSON, err := ioutil.ReadFile("settings.json")
+	clientSettingsJSON, err := ioutil.ReadFile(ConfigFilePath)
 	if err != nil {
 		log.Printf("Failed to read client configuration file - %v", err)
 		saveClientSettings()

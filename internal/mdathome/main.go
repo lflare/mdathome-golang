@@ -55,6 +55,7 @@ var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
+var ConfigFilePath string
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Start timer

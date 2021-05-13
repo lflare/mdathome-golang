@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- [2021-05-13] Commandline flag to read configuration from specific path by [@lflare].
 
 ### Changed
 
