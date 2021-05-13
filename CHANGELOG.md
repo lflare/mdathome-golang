@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.10.3] - 2021-05-13
+### Added
+- [2021-05-13] Added configuration option in JSON for specifying logs folder by [@lflare].
+
 ## [v1.10.2] - 2021-05-13
 ### Added
 - [2021-05-13] Commandline flag to read configuration from specific path by [@lflare].

@@ -15,7 +15,7 @@ func initLogger(logLevelString string, maxLogSizeInMb int, maxLogBackups int, ma
 	logLevel, _ := logrus.ParseLevel(logLevelString)
 
 	rotateFileHook, err := rotatefilehook.NewRotateFileHook(rotatefilehook.RotateFileConfig{
-		Filename:   "log/mdathome.log",
+		Filename:   clientSettings.LogDirectory + "/mdathome.log",
 		MaxSize:    maxLogSizeInMb,
 		MaxBackups: 3,
 		MaxAge:     28,

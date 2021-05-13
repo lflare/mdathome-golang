@@ -3,6 +3,7 @@ package mdathome
 // ClientSettings stores client settings
 type ClientSettings struct {
 	APIBackend                string `json:"api_backend"`
+	LogDirectory              string `json:"log_directory"`
 	CacheDirectory            string `json:"cache_directory"`
 	ClientPort                int    `json:"client_port"`
 	OverridePortReport        int    `json:"override_port_report"`

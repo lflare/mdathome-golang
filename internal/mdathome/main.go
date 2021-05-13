@@ -21,6 +21,7 @@ import (
 
 var clientSettings = ClientSettings{
 	APIBackend:                "https://api.mangadex.network", // Default to "https://api.mangadex.network"
+	LogDirectory:              "log/",                         // Default log directory
 	CacheDirectory:            "cache/",                       // Default cache directory
 	ClientPort:                443,                            // Default to listen for requests on port 443
 	OverridePortReport:        0,                              // Default to advertise for port 443
@@ -55,6 +56,7 @@ var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
+
 var ConfigFilePath string
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
