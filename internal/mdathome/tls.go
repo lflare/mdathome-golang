@@ -58,7 +58,7 @@ func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate
 		config.NextProtos = []string{"http/1.1"}
 	}
 
-	ln, err := net.Listen("tcp", addr)
+	ln, err := net.Listen("tcp4", addr)
 	if err != nil {
 		return err
 	}
