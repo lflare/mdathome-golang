@@ -6,7 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2021-05-13] Commandline flag to read configuration from specific path by [@lflare].
 
 ### Changed
 
@@ -15,9 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
-- [2021-05-13] Bind specifically to IPv4 ports by [@lflare].
 
 ### Security
+
+## [v1.10.2] - 2021-05-13
+### Added
+- [2021-05-13] Commandline flag to read configuration from specific path by [@lflare].
+
+### Fixed
+- [2021-05-13] Bind specifically to IPv4 ports by [@lflare].
 
 ## [v1.10.1] - 2021-04-16
 ### Changed
