@@ -168,7 +168,7 @@ func (c *Cache) StartBackgroundThread() {
 
 		// Log
 		usage := 100 * (float32(size) / float32(c.cacheLimit))
-		log.Warnf("Current diskcache size: %s, limit: %s, usage: %0.3f%%", ByteCountIEC(size), ByteCountIEC(c.cacheLimit), usage)
+		log.Infof("Current diskcache size: %s, limit: %s, usage: %0.3f%%", ByteCountIEC(size), ByteCountIEC(c.cacheLimit), usage)
 
 		// If size is bigger than configured byte limit, keep deleting last recently used files
 		if size > c.cacheLimit {
