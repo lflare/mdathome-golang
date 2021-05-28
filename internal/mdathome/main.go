@@ -45,6 +45,7 @@ var clientSettings = ClientSettings{
 	RejectInvalidTokens:     true,  // Default to reject invalid tokens
 	VerifyImageIntegrity:    false, // Default to not verify image integrity
 	LowMemoryMode:           false, // Default to not doing low-memory mode
+	SendServerHeader:        false, // Default to false to avoid MD@H node leak
 
 	LogLevel:              "trace", // Default to "trace" for all logs
 	MaxLogSizeInMebibytes: 64,      // Default to maximum log size of 64MiB
@@ -152,13 +153,16 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add server headers
-	serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", ClientVersion, ClientSpecification)
 	w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
 	w.Header().Set("Access-Control-Expose-Headers", "*")
 	w.Header().Set("Cache-Control", "public, max-age=1209600")
-	w.Header().Set("Server", serverHeader)
 	w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+
+	if (clientSettings.SendServerHeader) {
+	    serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", ClientVersion, ClientSpecification)
+	    w.Header().Set("Server", serverHeader)
+	}
 
 	// Log request
 	requestLogger.WithFields(logrus.Fields{"event": "received"}).Infof("Request from %s received", remoteAddr)

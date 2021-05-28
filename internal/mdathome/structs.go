@@ -28,6 +28,7 @@ type ClientSettings struct {
 	RejectInvalidTokens     bool   `json:"reject_invalid_tokens"`
 	VerifyImageIntegrity    bool   `json:"verify_image_integrity"`
 	LowMemoryMode           bool   `json:"low_memory_mode"`
+	SendServerHeader        bool   `json:"send_server_header"`
 
 	LogLevel              string `json:"log_level"`
 	MaxLogSizeInMebibytes int    `json:"max_log_size_in_mebibytes"`
