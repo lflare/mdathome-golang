@@ -59,6 +59,7 @@ As with the official client, this client reads a configuration JSON file.
     "reject_invalid_tokens": true,
     "verify_image_integrity": false,
     "low_memory_mode": false,
+    "send_server_header": false,
     "log_level": "trace",
     "max_log_size_in_mebibytes": 64,
     "max_log_backups": 3,
@@ -136,6 +137,9 @@ This setting controls if images in cache should be verified with the checksum in
 
 #### - `low_memory_mode`
 This setting controls if the client should work in low-memory mode by streaming directly from disk rather than to memory first before serving to clients. For smaller clients with faster disks (i.e. SSDs), this setting can be enabled experiementally. Otherwise, if your disk consists of rust spinning at 7200 RPM, stay far from this setting.
+
+#### - `send_server_header`
+This setting controls if the client should send the `Server` header or not. By default we disable it to avoid that people know you are running a MD@H node.
 
 ***
 ### Log Settings
