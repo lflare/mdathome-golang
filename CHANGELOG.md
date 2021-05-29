@@ -6,13 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2021-05-28] Add `send_server_header` parameter to disable `Server` header [@Korbeil]
-- [2021-05-29] Added some form of reverse proxy IP middleware by [@lflare]
-- [2021-05-29] Added rudimentary settings version migrator by [@lflare]
 
 ### Changed
-- [2021-05-29] Reworked configuration settings to be on a per-category basis by [@lflare].
-- [2021-05-29] Updated client specification to 31 by [@lflare].
 
 ### Deprecated
 
@@ -21,6 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.11.0] - 2021-05-29
+### Added
+- [2021-05-28] Added `send_server_header` parameter to disable sending the `Server` header by [@Korbeil].
+- [2021-05-29] Added some form of reverse proxy IP middleware by [@lflare].
+- [2021-05-29] Added rudimentary settings version migrator by [@lflare].
+
+### Changed
+- [2021-05-29] Reworked configuration settings to be on a per-category basis by [@lflare].
+- [2021-05-29] Updated client specification to 31 by [@lflare].
 
 ## [v1.10.3] - 2021-05-13
 ### Added
