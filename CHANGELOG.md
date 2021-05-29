@@ -6,7 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2021-05-30] Very rudimentary SNI whitelist support by [@lflare].
 
 ### Changed
 
@@ -15,10 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
-- [2021-05-30] Fixed headers change in specification 31 by [@lflare].
-- [2021-05-30] Use clientSettings for HTTP/2 setting by [@lflare],
 
 ### Security
+
+## [v1.11.2] - 2021-05-30
+### Added
+- [2021-05-30] Very rudimentary SNI whitelist support by [@lflare].
+
+### Fixed
+- [2021-05-30] Fixed headers change in specification 31 by [@lflare].
+- [2021-05-30] Use clientSettings for HTTP/2 setting by [@lflare],
 
 ## [v1.11.1] - 2021-05-29
 ### Fixed
