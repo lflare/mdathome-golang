@@ -14,6 +14,7 @@ require (
 	github.com/oschwald/geoip2-golang v1.5.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/snowzach/rotatefilehook v0.0.0-20180327172521-2f64f265f58c
+	github.com/spacemonkeygo/tlshowdy v0.0.0-20160207005338-8fa2cec1d7cd
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a

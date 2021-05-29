@@ -34,6 +34,7 @@ type ClientSettings struct {
 
 	// Security
 	AllowVisitorRefresh    bool `json:"allow_visitor_refresh"`
+	RejectInvalidSNI       bool `json:"reject_invalid_sni"`
 	RejectInvalidTokens    bool `json:"reject_invalid_tokens"`
 	SendServerHeader       bool `json:"send_server_header"`
 	UseReverseProxyHeaders bool `json:"use_reverse_proxy_ip"`

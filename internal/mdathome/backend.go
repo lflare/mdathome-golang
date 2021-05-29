@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -87,11 +88,15 @@ func backendPing() *ServerResponse {
 		return nil
 	}
 
-	// Check struct
+	// Check response for valid image server
 	if newServerResponse.ImageServer == "" {
 		log.Printf("Failed to verify server response: %s", response)
 		return nil
 	}
+
+	// Update client hostname in-memory
+	clientURL, _ := url.Parse(newServerResponse.URL)
+	clientHostname = clientURL.Hostname()
 
 	// Return server response
 	return &newServerResponse

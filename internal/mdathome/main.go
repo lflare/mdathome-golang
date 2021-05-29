@@ -49,10 +49,11 @@ var clientSettings = ClientSettings{
 
 	// Security
 	AllowVisitorRefresh:    false, // Default to not allow visitors to force-refresh images through
+	RejectInvalidSNI:       false, // Default to not rejecting valid SNIs
 	RejectInvalidTokens:    true,  // Default to reject invalid tokens
-	VerifyImageIntegrity:   false, // Default to not verify image integrity
-	UseReverseProxyHeaders: false, // Default to not using X-Forwarded-For header in proxy
 	SendServerHeader:       false, // Default to not send server headers
+	UseReverseProxyHeaders: false, // Default to not using X-Forwarded-For header in proxy
+	VerifyImageIntegrity:   false, // Default to not verify image integrity
 
 	// Metrics
 	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
@@ -72,6 +73,8 @@ var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
+
+var clientHostname string
 
 var ConfigFilePath string
 

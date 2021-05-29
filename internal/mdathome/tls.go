@@ -3,9 +3,12 @@ package mdathome
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/spacemonkeygo/tlshowdy"
 )
 
 type tcpKeepAliveListener struct {
@@ -13,22 +16,41 @@ type tcpKeepAliveListener struct {
 }
 
 func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
+	// Accept TCP connection
 	tc, err := ln.AcceptTCP()
 	if err != nil {
 		return
 	}
 
+	// Configure connection
 	err = tc.SetKeepAlive(true)
 	if err != nil {
 		return
 	}
-
 	err = tc.SetKeepAlivePeriod(1 * time.Minute)
 	if err != nil {
 		return
 	}
 
-	return tc, nil
+	// Peek into the ClientHello message
+	clientHello, conn, _ := tlshowdy.Peek(tc)
+
+	// Check SNI value if configured
+	if clientSettings.RejectInvalidSNI {
+		// Check to allow for both mangadex.network SNI and localhost SNI
+		if clientHello.ServerName != clientHostname && clientHello.ServerName != "localhost" {
+			// Log
+			err := errors.New(fmt.Sprintf("blocked unauthorised SNI request: %s", clientHello.ServerName))
+			log.Warn(err)
+
+			// Close connection and return for fast fail
+			conn.Close()
+			return conn, nil
+		}
+	}
+
+	// Return connection
+	return conn, nil
 }
 
 func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate, handler http.Handler) error {
@@ -49,6 +71,8 @@ func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate
 			tls.X25519,
 		},
 	}
+
+	// Prepare certificates
 	config.Certificates = make([]tls.Certificate, 1)
 	config.Certificates[0] = cert
 
