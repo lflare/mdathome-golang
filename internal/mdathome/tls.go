@@ -52,17 +52,20 @@ func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate
 	config.Certificates = make([]tls.Certificate, 1)
 	config.Certificates[0] = cert
 
-	if allowHTTP2 {
+	// If allowing http2
+	if clientSettings.AllowHTTP2 {
 		config.NextProtos = []string{"h2", "http/1.1"}
 	} else {
 		config.NextProtos = []string{"http/1.1"}
 	}
 
+	// Listen to only IPv4 interfaces
 	ln, err := net.Listen("tcp4", addr)
 	if err != nil {
 		return err
 	}
 
+	// Start TLS listeners
 	tlsListener := tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, config)
 	return server.Serve(tlsListener)
 }

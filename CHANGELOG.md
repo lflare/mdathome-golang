@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [2021-05-30] Fixed headers change in specification 31 by [@lflare].
+- [2021-05-30] Use clientSettings for HTTP/2 setting by [@lflare],
 
 ### Security
 
