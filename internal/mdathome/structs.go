@@ -2,6 +2,9 @@ package mdathome
 
 // ClientSettings stores client settings
 type ClientSettings struct {
+	// Settings Versioning
+	Version int `json:"version"`
+
 	// Client
 	LogDirectory              string `json:"log_directory"`
 	CacheDirectory            string `json:"cache_directory"`
@@ -48,6 +51,9 @@ type ClientSettings struct {
 
 	// Development settings
 	APIBackend string `json:"api_backend"`
+
+	// Deprecated settings
+	MaxReportedSizeInMebibytes int `json:"max_reported_size_in_mebibytes,omitempty"`
 }
 
 // ServerRequest stores a single `secret` field for miscellanous operations

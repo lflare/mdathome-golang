@@ -40,6 +40,9 @@ func loadClientSettings() {
 		log.Fatalf("Unable to unmarshal JSON file: %v", err)
 	}
 
+	// Migrate settings to the latest version
+	migrateClientSettings(&clientSettings)
+
 	// Check client configuration
 	if clientSettings.ClientSecret == "" {
 		log.Fatalf("Empty secret! Cannot run!")
@@ -51,6 +54,20 @@ func loadClientSettings() {
 
 	// Print client configuration
 	log.Printf("Client configuration loaded: %+v", clientSettings)
+}
+
+func migrateClientSettings(cs *ClientSettings) {
+	// Return early if fully migrated
+	if cs.Version == ClientSettingsVersion {
+		return
+	}
+
+	// Migrate from settings before version 1
+	if cs.Version == 0 {
+		cs.OverrideSizeReport = cs.MaxReportedSizeInMebibytes
+		cs.MaxReportedSizeInMebibytes = 0
+		cs.Version = 1
+	}
 }
 
 func checkClientVersion() {
