@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
+- [2021-05-30] Fixed headers change in specification 31 by [@lflare].
 
 ### Security
 

@@ -168,12 +168,13 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add server headers
-	w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Expose-Headers", "*")
 	w.Header().Set("Cache-Control", "public, max-age=1209600")
-	w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
+	w.Header().Set("Timing-Allow-Origin", "*")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
+	// Depending on client configuration, choose to hide Server header identifier
 	if clientSettings.SendServerHeader {
 		serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", ClientVersion, ClientSpecification)
 		w.Header().Set("Server", serverHeader)
