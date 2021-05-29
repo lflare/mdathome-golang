@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/VictoriaMetrics/metrics"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/lflare/mdathome-golang/pkg/diskcache"
 	"github.com/sirupsen/logrus"
@@ -47,10 +48,11 @@ var clientSettings = ClientSettings{
 	AllowUpstreamPooling: true,  // Allow upstream pooling by default
 
 	// Security
-	AllowVisitorRefresh:  false, // Default to not allow visitors to force-refresh images through
-	RejectInvalidTokens:  true,  // Default to reject invalid tokens
-	VerifyImageIntegrity: false, // Default to not verify image integrity
-	SendServerHeader:     false, // Default to not send server headers
+	AllowVisitorRefresh:    false, // Default to not allow visitors to force-refresh images through
+	RejectInvalidTokens:    true,  // Default to reject invalid tokens
+	VerifyImageIntegrity:   false, // Default to not verify image integrity
+	UseReverseProxyHeaders: false, // Default to not using X-Forwarded-For header in proxy
+	SendServerHeader:       false, // Default to not send server headers
 
 	// Metrics
 	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
@@ -447,6 +449,11 @@ func StartServer() {
 		r.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
 			metrics.WritePrometheus(w, true)
 		})
+	}
+
+	// If configured behind reverse proxies
+	if clientSettings.UseReverseProxyHeaders {
+		r.Use(handlers.ProxyHeaders)
 	}
 
 	// Set router

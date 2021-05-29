@@ -30,10 +30,11 @@ type ClientSettings struct {
 	LowMemoryMode        bool `json:"low_memory_mode"`
 
 	// Security
-	AllowVisitorRefresh  bool `json:"allow_visitor_refresh"`
-	RejectInvalidTokens  bool `json:"reject_invalid_tokens"`
-	SendServerHeader     bool `json:"send_server_header"`
-	VerifyImageIntegrity bool `json:"verify_image_integrity"`
+	AllowVisitorRefresh    bool `json:"allow_visitor_refresh"`
+	RejectInvalidTokens    bool `json:"reject_invalid_tokens"`
+	SendServerHeader       bool `json:"send_server_header"`
+	UseReverseProxyHeaders bool `json:"use_reverse_proxy_ip"`
+	VerifyImageIntegrity   bool `json:"verify_image_integrity"`
 
 	// Metrics
 	EnablePrometheusMetrics bool   `json:"enable_prometheus_metrics"`

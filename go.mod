@@ -7,6 +7,7 @@ require (
 	github.com/VictoriaMetrics/metrics v1.17.2
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.8
