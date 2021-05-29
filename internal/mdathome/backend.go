@@ -34,7 +34,7 @@ func backendPing() *ServerResponse {
 
 	// Check if we are overriding reported cache size
 	if clientSettings.OverrideSizeReport != 0 {
-		settings.DiskSpace = clientSettings.OverrideSizeReport
+		settings.DiskSpace = clientSettings.OverrideSizeReport * 1024 * 1024
 	}
 
 	// Marshal JSON

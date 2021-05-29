@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.11.1] - 2021-05-29
+### Fixed
+- [2021-05-29] Fixed incorrect size report override by [@lflare].
+
 ## [v1.11.0] - 2021-05-29
 ### Added
 - [2021-05-28] Added `send_server_header` parameter to disable sending the `Server` header by [@Korbeil].
