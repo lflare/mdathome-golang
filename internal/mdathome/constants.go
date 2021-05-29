@@ -11,4 +11,4 @@ const ClientSettingsVersion int = 1
 var ClientVersion string
 
 // ClientSpecification is the integer version of the official specification this client is supposed to work against
-const ClientSpecification int = 30
+const ClientSpecification int = 31

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - [2021-05-29] Reworked configuration settings to be on a per-category basis by [@lflare].
+- [2021-05-29] Updated client specification to 31 by [@lflare].
 
 ### Deprecated
 
