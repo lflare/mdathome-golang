@@ -2,38 +2,51 @@ package mdathome
 
 // ClientSettings stores client settings
 type ClientSettings struct {
-	APIBackend                string `json:"api_backend"`
+	// Client
 	LogDirectory              string `json:"log_directory"`
 	CacheDirectory            string `json:"cache_directory"`
-	ClientPort                int    `json:"client_port"`
-	OverridePortReport        int    `json:"override_port_report"`
-	OverrideAddressReport     string `json:"override_address_report"`
-	ClientSecret              string `json:"client_secret"`
 	GracefulShutdownInSeconds int    `json:"graceful_shutdown_in_seconds"`
 
-	MaxKilobitsPerSecond       int `json:"max_kilobits_per_second"`
-	MaxCacheSizeInMebibytes    int `json:"max_cache_size_in_mebibytes"`
-	MaxReportedSizeInMebibytes int `json:"max_reported_size_in_mebibytes"`
+	// Overrides
+	OverridePortReport    int    `json:"override_port_report"`
+	OverrideAddressReport string `json:"override_address_report"`
+	OverrideSizeReport    int    `json:"override_size_report"`
+	OverrideUpstream      string `json:"override_upstream"`
 
+	// Node
+	ClientPort              int    `json:"client_port"`
+	ClientSecret            string `json:"client_secret"`
+	MaxKilobitsPerSecond    int    `json:"max_kilobits_per_second"`
+	MaxCacheSizeInMebibytes int    `json:"max_cache_size_in_mebibytes"`
+
+	// Cache
 	CacheScanIntervalInSeconds int `json:"cache_scan_interval_in_seconds"`
 	CacheRefreshAgeInSeconds   int `json:"cache_refresh_age_in_seconds"`
 	MaxCacheScanTimeInSeconds  int `json:"max_cache_scan_time_in_seconds"`
 
-	AllowHTTP2              bool   `json:"allow_http2"`
-	AllowUpstreamPooling    bool   `json:"allow_upstream_pooling"`
-	AllowVisitorRefresh     bool   `json:"allow_visitor_refresh"`
+	// Performance
+	AllowHTTP2           bool `json:"allow_http2"`
+	AllowUpstreamPooling bool `json:"allow_upstream_pooling"`
+	LowMemoryMode        bool `json:"low_memory_mode"`
+
+	// Security
+	AllowVisitorRefresh  bool `json:"allow_visitor_refresh"`
+	RejectInvalidTokens  bool `json:"reject_invalid_tokens"`
+	SendServerHeader     bool `json:"send_server_header"`
+	VerifyImageIntegrity bool `json:"verify_image_integrity"`
+
+	// Metrics
 	EnablePrometheusMetrics bool   `json:"enable_prometheus_metrics"`
 	MaxMindLicenseKey       string `json:"maxmind_license_key"`
-	OverrideUpstream        string `json:"override_upstream"`
-	RejectInvalidTokens     bool   `json:"reject_invalid_tokens"`
-	VerifyImageIntegrity    bool   `json:"verify_image_integrity"`
-	LowMemoryMode           bool   `json:"low_memory_mode"`
-	SendServerHeader        bool   `json:"send_server_header"`
 
+	// Log
 	LogLevel              string `json:"log_level"`
 	MaxLogSizeInMebibytes int    `json:"max_log_size_in_mebibytes"`
 	MaxLogBackups         int    `json:"max_log_backups"`
 	MaxLogAgeInDays       int    `json:"max_log_age_in_days"`
+
+	// Development settings
+	APIBackend string `json:"api_backend"`
 }
 
 // ServerRequest stores a single `secret` field for miscellanous operations

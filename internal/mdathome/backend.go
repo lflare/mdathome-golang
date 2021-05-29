@@ -16,8 +16,8 @@ func backendPing() *ServerResponse {
 	settings := ServerSettings{
 		Secret:       clientSettings.ClientSecret,
 		Port:         clientSettings.ClientPort,
-		DiskSpace:    clientSettings.MaxReportedSizeInMebibytes * 1024 * 1024, // 1GB
-		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,          // 100Mbps
+		DiskSpace:    clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024, // 1GB
+		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       // 100Mbps
 		BuildVersion: ClientSpecification,
 		TLSCreatedAt: nil,
 	}
@@ -30,6 +30,11 @@ func backendPing() *ServerResponse {
 	// Check if we are overriding reported address
 	if clientSettings.OverrideAddressReport != "" {
 		settings.IPAddress = clientSettings.OverrideAddressReport
+	}
+
+	// Check if we are overriding reported cache size
+	if clientSettings.OverrideSizeReport != 0 {
+		settings.DiskSpace = clientSettings.OverrideSizeReport
 	}
 
 	// Marshal JSON

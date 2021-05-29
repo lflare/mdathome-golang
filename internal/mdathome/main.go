@@ -20,37 +20,50 @@ import (
 )
 
 var clientSettings = ClientSettings{
-	APIBackend:                "https://api.mangadex.network", // Default to "https://api.mangadex.network"
-	LogDirectory:              "log/",                         // Default log directory
-	CacheDirectory:            "cache/",                       // Default cache directory
-	ClientPort:                443,                            // Default to listen for requests on port 443
-	OverridePortReport:        0,                              // Default to advertise for port 443
-	OverrideAddressReport:     "",                             // Default to not overriding address report
-	GracefulShutdownInSeconds: 300,                            // Default 5m graceful shutdown
+	// Client
+	LogDirectory:              "log/",   // Default log directory
+	CacheDirectory:            "cache/", // Default cache directory
+	GracefulShutdownInSeconds: 300,      // Default 5m graceful shutdown
 
-	MaxKilobitsPerSecond:       10000, // Default 10Mbps
-	MaxCacheSizeInMebibytes:    10240, // Default 10GB
-	MaxReportedSizeInMebibytes: 10240, // Default 10GB
+	// Overrides
+	OverridePortReport:    0,     // Default to advertise for port 443
+	OverrideAddressReport: "",    // Default to not overriding address report
+	OverrideSizeReport:    10240, // Default 10GB
+	OverrideUpstream:      "",    // Default to nil to follow upstream by controller
 
+	// Node
+	ClientPort:              443,   // Default to listen for requests on port 443
+	MaxKilobitsPerSecond:    10000, // Default 10Mbps
+	MaxCacheSizeInMebibytes: 10240, // Default 10GB
+
+	// Cache
 	CacheScanIntervalInSeconds: 300,  // Default 5m scan interval
 	CacheRefreshAgeInSeconds:   3600, // Default 1h cache refresh age
 	MaxCacheScanTimeInSeconds:  15,   // Default 15s max scan period
 
-	AllowHTTP2:              true,  // Allow HTTP2 by default
-	AllowUpstreamPooling:    true,  // Allow upstream pooling by default
-	AllowVisitorRefresh:     false, // Default to not allow visitors to force-refresh images through Cache-Control
+	// Performance
+	LowMemoryMode:        false, // Default to not doing low-memory mode
+	AllowHTTP2:           true,  // Allow HTTP2 by default
+	AllowUpstreamPooling: true,  // Allow upstream pooling by default
+
+	// Security
+	AllowVisitorRefresh:  false, // Default to not allow visitors to force-refresh images through
+	RejectInvalidTokens:  true,  // Default to reject invalid tokens
+	VerifyImageIntegrity: false, // Default to not verify image integrity
+	SendServerHeader:     false, // Default to not send server headers
+
+	// Metrics
 	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
 	MaxMindLicenseKey:       "",    // Default to not have any MaxMind Geolocation DB
-	OverrideUpstream:        "",    // Default to nil to follow upstream by controller
-	RejectInvalidTokens:     true,  // Default to reject invalid tokens
-	VerifyImageIntegrity:    false, // Default to not verify image integrity
-	LowMemoryMode:           false, // Default to not doing low-memory mode
-	SendServerHeader:        false, // Default to false to avoid MD@H node leak
 
+	// Log
 	LogLevel:              "trace", // Default to "trace" for all logs
 	MaxLogSizeInMebibytes: 64,      // Default to maximum log size of 64MiB
 	MaxLogBackups:         3,       // Default to maximum log backups of 3
 	MaxLogAgeInDays:       7,       // Default to maximum log age of 7 days
+
+	// Development
+	APIBackend: "https://api.mangadex.network", // Default to "https://api.mangadex.network"
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
@@ -159,9 +172,9 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
-	if (clientSettings.SendServerHeader) {
-	    serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", ClientVersion, ClientSpecification)
-	    w.Header().Set("Server", serverHeader)
+	if clientSettings.SendServerHeader {
+		serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", ClientVersion, ClientSpecification)
+		w.Header().Set("Server", serverHeader)
 	}
 
 	// Log request

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [2021-05-28] Add `send_server_header` parameter to disable `Server` header [@Korbeil]
 
 ### Changed
+- [2021-05-29] Reworked configuration settings to be on a per-category basis by [@lflare].
 
 ### Deprecated
 
