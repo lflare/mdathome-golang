@@ -26,8 +26,8 @@ default:
 
 snapshot:
 	LDFLAGS=${LDFLAGS} goreleaser build --rm-dist --snapshot
-	find 'build/' -name 'mdathome-*' | xargs -n 1 upx -qq
+	find 'build/' -name 'mdathome-*' | grep -v 'darwin' | xargs -n 1 upx -qq
 
 all:
 	LDFLAGS=${LDFLAGS} goreleaser build --rm-dist
-	find 'build/' -name 'mdathome-*' | xargs -n 1 upx -qq
+	find 'build/' -name 'mdathome-*' | grep -v 'darwin' | xargs -n 1 upx -qq

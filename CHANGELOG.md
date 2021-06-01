@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- [2021-06-02] Removed `upx` from macOS/Darwin builds by [@lflare].
 
 ### Deprecated
 
