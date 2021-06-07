@@ -8,16 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- [2021-06-02] Removed `upx` from macOS/Darwin builds by [@lflare].
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- [2021-06-07] Fixed TLS SNI random crashes by [@lflare].
 
 ### Security
+
+## [v1.11.3] - 2021-06-07
+### Changed
+- [2021-06-02] Removed `upx` from macOS/Darwin builds by [@lflare].
+
+### Fixed
+- [2021-06-07] Fixed TLS SNI random crashes by [@lflare].
 
 ## [v1.11.2] - 2021-05-30
 ### Added
