@@ -18,11 +18,11 @@ func verifyToken(tokenString string, chapterHash string) (int, error) {
 	// Decode base64-encoded token & key
 	tokenBytes, err := base64.RawURLEncoding.DecodeString(tokenString)
 	if err != nil {
-		return 403, fmt.Errorf("Cannot decode token - %v", err)
+		return 403, fmt.Errorf("cannot decode token - %v", err)
 	}
 	keyBytes, err := base64.StdEncoding.DecodeString(serverResponse.TokenKey)
 	if err != nil {
-		return 403, fmt.Errorf("Cannot decode key - %v", err)
+		return 403, fmt.Errorf("cannot decode key - %v", err)
 	}
 
 	// Copy over byte slices to fixed-length byte arrays for decryption
@@ -34,29 +34,29 @@ func verifyToken(tokenString string, chapterHash string) (int, error) {
 	// Decrypt token
 	data, ok := box.OpenAfterPrecomputation(nil, tokenBytes[24:], &nonce, &key)
 	if !ok {
-		return 403, fmt.Errorf("Failed to decrypt token")
+		return 403, fmt.Errorf("failed to decrypt token")
 	}
 
 	// Unmarshal to struct
 	token := Token{}
 	if err := json.Unmarshal(data, &token); err != nil {
-		return 403, fmt.Errorf("Failed to unmarshal token - %v", err)
+		return 403, fmt.Errorf("failed to unmarshal token - %v", err)
 	}
 
 	// Parse expiry time
 	expires, err := time.Parse(time.RFC3339, token.Expires)
 	if err != nil {
-		return 403, fmt.Errorf("Failed to parse expiry from token - %v", err)
+		return 403, fmt.Errorf("failed to parse expiry from token - %v", err)
 	}
 
 	// Check token expiry timing
 	if time.Now().After(expires) {
-		return 410, fmt.Errorf("Token expired")
+		return 410, fmt.Errorf("token expired")
 	}
 
 	// Check that chapter hashes are the same
 	if token.Hash != chapterHash {
-		return 403, fmt.Errorf("Token hash invalid")
+		return 403, fmt.Errorf("token hash invalid")
 	}
 
 	// Token is valid

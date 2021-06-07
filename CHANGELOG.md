@@ -8,14 +8,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- [2021-06-02] Removed `upx` from macOS/Darwin builds by [@lflare].
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+- [2021-06-07] Fixed TLS SNI random crashes by [@lflare].
 
 ### Security
+
+## [v1.11.2] - 2021-05-30
+### Added
+- [2021-05-30] Very rudimentary SNI whitelist support by [@lflare].
+
+### Fixed
+- [2021-05-30] Fixed headers change in specification 31 by [@lflare].
+- [2021-05-30] Use clientSettings for HTTP/2 setting by [@lflare].
+
+## [v1.11.1] - 2021-05-29
+### Fixed
+- [2021-05-29] Fixed incorrect size report override by [@lflare].
+
+## [v1.11.0] - 2021-05-29
+### Added
+- [2021-05-28] Added `send_server_header` parameter to disable sending the `Server` header by [@Korbeil].
+- [2021-05-29] Added some form of reverse proxy IP middleware by [@lflare].
+- [2021-05-29] Added rudimentary settings version migrator by [@lflare].
+
+### Changed
+- [2021-05-29] Reworked configuration settings to be on a per-category basis by [@lflare].
+- [2021-05-29] Updated client specification to 31 by [@lflare].
+
+## [v1.10.3] - 2021-05-13
+### Added
+- [2021-05-13] Added configuration option in JSON for specifying logs folder by [@lflare].
+
+## [v1.10.2] - 2021-05-13
+### Added
+- [2021-05-13] Commandline flag to read configuration from specific path by [@lflare].
+
+### Fixed
+- [2021-05-13] Bind specifically to IPv4 ports by [@lflare].
+
+## [v1.10.1] - 2021-04-16
+### Changed
+- [2021-04-16] Made API backend configurable by [@lflare].
+
+### Fixed
+- [2021-04-16] Redid project linting and formatting guidelines with staticcheck by [@lflare].
+
+## [v1.10.0] - 2021-03-18
+### Changed
+- [2021-03-11] Added more logging fields in JSON structure by [@lflare].
+- [2021-03-12] Updated to client specification 30 by [@lflare].
+
+### Removed
+- [2021-03-12] Removed test chapter exemptions by [@lflare].
+
+## [v1.9.3] - 2021-03-05
+### Changed
+- [2021-02-28] Updated `go.mod` with Golang 1.16 by [@lflare].
+
+### Fixed
+- [2021-02-25] Fixed missing `f` thanks to LittleEndu by [@lflare].
+- [2021-03-05] Fixed IPv6 issue with backend communication by [@lflare].
+
+## [v1.9.2] - 2021-02-25
+### Changed
+- [2021-02-13] Updated README.md with more up-to-date instructions by [@lflare].
+- [2021-02-25] Recompiled with Golang v1.16 by [@lflare].
+
+## [v1.9.1] - 2021-02-02
+### Added
+- [2021-01-28] Added low-memory mode option to stream images straight from disk by [@lflare].
+- [2021-02-02] Added back ALL THE COMPILATIONS by [@lflare].
+
+### Changed
+- [2021-01-28] Reworked diskcache to stream files more efficiently by [@lflare].
+- [2021-02-02] Added `disable_tokens` handling from backend by [@lflare].
+- [2021-02-02] Updated to client specification 23 by [@lflare].
+- [2021-02-02] Lowered startup delay to 5 seconds on older versions of client by [@lflare].
 
 ## [v1.9.0] - 2021-01-24
 ### Added

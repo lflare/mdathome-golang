@@ -2,9 +2,12 @@ package mdathome
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -14,9 +17,9 @@ func backendPing() *ServerResponse {
 	settings := ServerSettings{
 		Secret:       clientSettings.ClientSecret,
 		Port:         clientSettings.ClientPort,
-		DiskSpace:    clientSettings.MaxReportedSizeInMebibytes * 1024 * 1024, // 1GB
-		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,          // 100Mbps
-		BuildVersion: specVersion,
+		DiskSpace:    clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024, // 1GB
+		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       // 100Mbps
+		BuildVersion: ClientSpecification,
 		TLSCreatedAt: nil,
 	}
 
@@ -30,11 +33,25 @@ func backendPing() *ServerResponse {
 		settings.IPAddress = clientSettings.OverrideAddressReport
 	}
 
+	// Check if we are overriding reported cache size
+	if clientSettings.OverrideSizeReport != 0 {
+		settings.DiskSpace = clientSettings.OverrideSizeReport * 1024 * 1024
+	}
+
 	// Marshal JSON
 	settingsJSON, _ := json.Marshal(&settings)
 
+	// Prepare backend client
+	client = &http.Client{
+		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return net.Dial("tcp4", addr)
+			},
+		},
+	}
+
 	// Ping backend server
-	r, err := http.Post(apiBackend+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
+	r, err := client.Post(clientSettings.APIBackend+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
 	if err != nil {
 		log.Printf("Failed to ping control server: %v", err)
 		return nil
@@ -62,18 +79,24 @@ func backendPing() *ServerResponse {
 	log.Printf("Server settings received! - %s...", string(response[:tlsIndex]))
 
 	// Decode & unmarshal server response
-	newServerResponse := ServerResponse{}
+	newServerResponse := ServerResponse{
+		DisableTokens: false, // Default to not force disabling tokens
+	}
 	err = json.Unmarshal(response, &newServerResponse)
 	if err != nil {
 		log.Printf("Failed to ping control server: %v", err)
 		return nil
 	}
 
-	// Check struct
+	// Check response for valid image server
 	if newServerResponse.ImageServer == "" {
 		log.Printf("Failed to verify server response: %s", response)
 		return nil
 	}
+
+	// Update client hostname in-memory
+	clientURL, _ := url.Parse(newServerResponse.URL)
+	clientHostname = clientURL.Hostname()
 
 	// Return server response
 	return &newServerResponse
@@ -85,7 +108,7 @@ func backendShutdown() {
 		Secret: clientSettings.ClientSecret,
 	}
 	requestJSON, _ := json.Marshal(&request)
-	r, err := http.Post(apiBackend+"/stop", "application/json", bytes.NewBuffer(requestJSON))
+	r, err := http.Post(clientSettings.APIBackend+"/stop", "application/json", bytes.NewBuffer(requestJSON))
 	if err != nil {
 		log.Fatalf("Failed to shutdown server gracefully: %v", err)
 	}

@@ -41,43 +41,43 @@ func (c *Cache) DeleteFile(file string) error {
 }
 
 // Get takes a key, hashes it, and returns the corresponding file in the directory
-func (c *Cache) Get(key string) (resp []byte, mtime time.Time, err error) {
+func (c *Cache) Get(key string) (reader *os.File, size int64, mtime time.Time, err error) {
 	// Check for empty cache key
 	if len(key) == 0 {
-		return nil, time.Now(), fmt.Errorf("Empty cache key")
+		return nil, 0, time.Now(), fmt.Errorf("Empty cache key")
 	}
 
 	// Get cache key
 	dir, key := getCacheKey(key)
 
 	// Read image from directory
-	file, err := ioutil.ReadFile(c.directory + "/" + dir + "/" + key)
+	file, err := os.Open(c.directory + "/" + dir + "/" + key)
 	if err != nil {
 		err = fmt.Errorf("Failed to read image from key %s: %v", key, err)
-		return nil, time.Now(), err
+		return nil, 0, time.Now(), err
 	}
 
-	// Get last modified header
-	info, err := os.Stat(c.directory + "/" + dir + "/" + key)
+	// Get file information
+	fileInfo, err := os.Stat(c.directory + "/" + dir + "/" + key)
 	if err != nil {
 		err = fmt.Errorf("Failed to retrieve file information from key %s: %v", key, err)
-		return nil, time.Now(), err
+		return nil, 0, time.Now(), err
 	}
 
 	// Attempt to get keyPair
 	keyPair, err := c.getEntry(key)
 	if err != nil {
 		err = fmt.Errorf("Failed to get entry for cache key %s: %v", key, err)
-		return nil, time.Now(), err
+		return nil, 0, time.Now(), err
 	}
 
 	// If keyPair is older than configured cacheRefreshAge, refresh
 	if keyPair.Timestamp < time.Now().Add(-1*time.Duration(c.cacheRefreshAge)*time.Second).Unix() {
 		log.Debugf("Updating timestamp: %+v", keyPair)
 		if err != nil {
-			size := len(file)
+			size := fileInfo.Size()
 			timestamp := time.Now().Unix()
-			keyPair = KeyPair{key, timestamp, size}
+			keyPair = KeyPair{key, timestamp, int(size)}
 		}
 
 		// Update timestamp
@@ -87,12 +87,12 @@ func (c *Cache) Get(key string) (resp []byte, mtime time.Time, err error) {
 		err := c.setEntry(keyPair)
 		if err != nil {
 			err = fmt.Errorf("Failed to set entry for key %s: %v", key, err)
-			return nil, time.Now(), err
+			return nil, 0, time.Now(), err
 		}
 	}
 
 	// Return file
-	return file, info.ModTime(), nil
+	return file, fileInfo.Size(), fileInfo.ModTime(), nil
 }
 
 // Set takes a key, hashes it, and saves the `resp` bytearray into the corresponding file

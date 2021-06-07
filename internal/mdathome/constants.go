@@ -1,8 +1,14 @@
 package mdathome
 
+////
 // Client settings
-const clientVersion string = "v1.9.0"
-const specVersion int = 20
+///
 
-// Backend settings (Swap to use testnet)
-const apiBackend string = "https://api.mangadex.network" // "https://mangadex-test.net"
+// ClientSettingsVersion is the latest client settings version this client is supposed to work with
+const ClientSettingsVersion int = 1
+
+// ClientVersion is the description of the version of the working branch when compiled
+var ClientVersion string
+
+// ClientSpecification is the integer version of the official specification this client is supposed to work against
+const ClientSpecification int = 31

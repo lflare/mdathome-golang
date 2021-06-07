@@ -33,14 +33,22 @@ If you want to run the client in a Docker container you can do so! Make sure to 
 docker run -d -v /path/to/your/cache:/mangahome/cache -v /path/to/your/settings.json:/mangahome/settings.json -p 443:443 lflare/mdathome-golang:latest
 ```
 
+## Common Problems
+### Client is online but no requests / Client is pinging but no requests
+
+One of the most common problems experienced by users is when they use this client, their client shows up on mangadex.network but never receives requests. The reason behind this problem, is that api.mangadex.network, while having an IPv6 AAAA address, does not actually accept IPv6 connections from clients.
+
+To resolve, one can either override the reported address to the backend by modifying the `override_address_report` key with the intended IPv4 address. Alternatively, one can follow their OS-specific guide and disable IPv6 support entirely.
+
 ## Configuration
 As with the official client, this client reads a configuration JSON file.
 
 ```json
 {
     "cache_directory": "cache/",
-    "client_port": 44300,
+    "client_port": 443,
     "override_port_report": 0,
+    "override_address_report": "",
     "client_secret": "",
     "graceful_shutdown_in_seconds": 300,
     "max_kilobits_per_second": 10000,
@@ -53,9 +61,12 @@ As with the official client, this client reads a configuration JSON file.
     "allow_upstream_pooling": true,
     "allow_visitor_refresh": false,
     "enable_prometheus_metrics": false,
+    "maxmind_license_key": "",
     "override_upstream": "",
-    "reject_invalid_tokens": false,
+    "reject_invalid_tokens": true,
     "verify_image_integrity": false,
+    "low_memory_mode": false,
+    "send_server_header": false,
     "log_level": "trace",
     "max_log_size_in_mebibytes": 64,
     "max_log_backups": 3,
@@ -69,11 +80,14 @@ As with the official client, this client reads a configuration JSON file.
 #### - `cache_directory`
 Allows configuration of where the cache will be stored at.
 
-#### - `client_port` - Recommended `443`
+#### - `client_port`
 Allows configuration of whichever port the client will listen on.
 
 #### - `override_port_report`
 Allows overriding of reported port to backend. Defaults to `0` for disabled.
+
+#### - `override_address_report`
+Allows overriding of reported address to backend. Defaults to `""` for disabled.
 
 #### - `client_secret`
 Self-explanatory, this should be obtained from the [MangaDex@Home page](https://mangadex.org/md_at_home).
@@ -116,14 +130,23 @@ This setting controls if visitors should be allowed to force image refreshes thr
 #### - `enable_prometheus_metrics`
 This setting controls if client metrics should be published on the `/metrics` endpoint of your server. **Note:** All metrics are public and do not require authentication to access. If this does not strike you fancy, either submit a PR to change this behaviour, or disable it entirely.
 
+#### - `maxmind_license_key`
+This setting allows you to enable request geolocation support by supplying with a MaxMind API key. **Note:** `enable_prometheus_metrics` needs to be enabled as well for the appropriate geolocation metrics to show.
+
 #### - `override_upstream` - Recommended empty.
 This setting allows you to override the upstream server. If you are a normal MD@H user, this setting is not for you and should be left empty.
 
-#### - `reject_invalid_tokens` - Recommended `no`
+#### - `reject_invalid_tokens` - Recommended `yes`
 This setting controls if the cache server should reject all requests with missing or invalid security tokens. At present (2021/01/04), the official client does not enforce token verifications, and thus it is recommended to be off on this client as well.
 
 #### - `verify_image_integrity`
 This setting controls if images in cache should be verified with the checksum in the image name. This only applies to `/data/` images due to limitations with upstream.
+
+#### - `low_memory_mode`
+This setting controls if the client should work in low-memory mode by streaming directly from disk rather than to memory first before serving to clients. For smaller clients with faster disks (i.e. SSDs), this setting can be enabled experiementally. Otherwise, if your disk consists of rust spinning at 7200 RPM, stay far from this setting.
+
+#### - `send_server_header`
+This setting controls if the client should send the `Server` header or not. By default we disable it to avoid that people know you are running a MD@H node.
 
 ***
 ### Log Settings

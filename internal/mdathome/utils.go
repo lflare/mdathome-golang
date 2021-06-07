@@ -19,7 +19,7 @@ func saveClientSettings() {
 		log.Fatalln("Failed to marshal sample settings.json")
 	}
 
-	err = ioutil.WriteFile("settings.json", clientSettingsSampleBytes, 0600)
+	err = ioutil.WriteFile(ConfigFilePath, clientSettingsSampleBytes, 0600)
 	if err != nil {
 		log.Fatalf("Failed to create sample settings.json: %v", err)
 	}
@@ -27,7 +27,7 @@ func saveClientSettings() {
 
 func loadClientSettings() {
 	// Read JSON from file
-	clientSettingsJSON, err := ioutil.ReadFile("settings.json")
+	clientSettingsJSON, err := ioutil.ReadFile(ConfigFilePath)
 	if err != nil {
 		log.Printf("Failed to read client configuration file - %v", err)
 		saveClientSettings()
@@ -39,6 +39,9 @@ func loadClientSettings() {
 	if err != nil {
 		log.Fatalf("Unable to unmarshal JSON file: %v", err)
 	}
+
+	// Migrate settings to the latest version
+	migrateClientSettings(&clientSettings)
 
 	// Check client configuration
 	if clientSettings.ClientSecret == "" {
@@ -53,6 +56,20 @@ func loadClientSettings() {
 	log.Printf("Client configuration loaded: %+v", clientSettings)
 }
 
+func migrateClientSettings(cs *ClientSettings) {
+	// Return early if fully migrated
+	if cs.Version == ClientSettingsVersion {
+		return
+	}
+
+	// Migrate from settings before version 1
+	if cs.Version == 0 {
+		cs.OverrideSizeReport = cs.MaxReportedSizeInMebibytes
+		cs.MaxReportedSizeInMebibytes = 0
+		cs.Version = 1
+	}
+}
+
 func checkClientVersion() {
 	// Prepare version check
 	githubTag := &latest.GithubTag{
@@ -62,21 +79,21 @@ func checkClientVersion() {
 	}
 
 	// Check if client is latest
-	res, err := latest.Check(githubTag, clientVersion)
+	res, err := latest.Check(githubTag, ClientVersion)
 	if err != nil {
-		log.Printf("Failed to check client version %s? Proceed with caution!", clientVersion)
+		log.Printf("Failed to check client version %s? Proceed with caution!", ClientVersion)
 	} else {
 		if res.Outdated {
-			log.Printf("Client %s is not the latest! You should update to the latest version %s now!", clientVersion, res.Current)
-			log.Printf("Client starting in 10 seconds...")
-			time.Sleep(10 * time.Second)
+			log.Printf("Client %s is not the latest! You should update to the latest version %s now!", ClientVersion, res.Current)
+			log.Printf("Client starting in 5 seconds...")
+			time.Sleep(5 * time.Second)
 		} else {
-			log.Printf("Client %s is latest! Starting client!", clientVersion)
+			log.Printf("Client %s is latest! Starting client!", ClientVersion)
 		}
 	}
 }
 
-func backgroundWorker() {
+func startBackgroundWorker() {
 	// Wait 10 seconds
 	log.Println("Starting background jobs!")
 	time.Sleep(10 * time.Second)
@@ -113,7 +130,7 @@ func backgroundWorker() {
 	}
 }
 
-func serverShutdownHandler() {
+func registerShutdownHandler() {
 	// Hook on to SIGTERM
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -150,16 +167,4 @@ func serverShutdownHandler() {
 		// Exit properly
 		os.Exit(0)
 	}()
-}
-
-func isTestChapter(hash string) bool {
-	testHashes := []string{"1b682e7b24ae7dbdc5064eeeb8e8e353", "8172a46adc798f4f4ace6663322a383e"} // N9, B18
-	// Except carbotaniuman screwed up the commit on official spec, so the N9 chapter hash is wrong.
-
-	for _, item := range testHashes {
-		if item == hash {
-			return true
-		}
-	}
-	return false
 }

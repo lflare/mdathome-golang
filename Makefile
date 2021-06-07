@@ -4,7 +4,7 @@
 # ########################################################## #
 
 # Check for required command tools to build or stop immediately
-EXECUTABLES = git go find pwd
+EXECUTABLES = git go find pwd upx
 K := $(foreach exec,$(EXECUTABLES),\
         $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH)))
 
@@ -12,22 +12,22 @@ ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 MAKEFILE := $(lastword $(MAKEFILE_LIST))
 
 BINARY = mdathome-golang
-VERSION = `git describe --tag`
-BUILD = `git rev-parse HEAD`
+VERSION = $(shell git describe --tag | cut -d '-' -f -2 | tr '-' '.')
+BUILD = $(shell git rev-parse HEAD)
 PLATFORMS = linux windows
 ARCHITECTURES = 386 amd64 arm arm64
 
 
-LDFLAGS = -ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
+LDFLAGS = "-X github.com/lflare/mdathome-golang/internal/mdathome.ClientVersion=${VERSION} -X mdathome.Build=${BUILD}"
 
 default:
-	CGO_ENABLED=0 go build -o ./mdathome-golang -tags netgo -trimpath -ldflags '-s -w' ./cmd/mdathome
-	upx mdathome-golang
+	CGO_ENABLED=0 go build -o ./mdathome-golang -tags netgo -trimpath -ldflags=${LDFLAGS} ./cmd/mdathome
+	upx -qq mdathome-golang
 
 snapshot:
-	goreleaser build --rm-dist --snapshot
-	upx build/mdathome-*
+	LDFLAGS=${LDFLAGS} goreleaser build --rm-dist --snapshot
+	find 'build/' -name 'mdathome-*' | grep -v 'darwin' | xargs -n 1 upx -qq
 
 all:
-	goreleaser build --rm-dist
-	upx build/mdathome-*
+	LDFLAGS=${LDFLAGS} goreleaser build --rm-dist
+	find 'build/' -name 'mdathome-*' | grep -v 'darwin' | xargs -n 1 upx -qq

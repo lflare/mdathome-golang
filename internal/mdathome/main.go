@@ -14,45 +14,69 @@ import (
 	"time"
 
 	"github.com/VictoriaMetrics/metrics"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/lflare/mdathome-golang/pkg/diskcache"
 	"github.com/sirupsen/logrus"
 )
 
 var clientSettings = ClientSettings{
+	// Client
+	LogDirectory:              "log/",   // Default log directory
 	CacheDirectory:            "cache/", // Default cache directory
-	ClientPort:                443,      // Default to listen for requests on port 443
-	OverridePortReport:        0,        // Default to advertise for port 443
-	OverrideAddressReport:     "",       // Default to not overriding address report
 	GracefulShutdownInSeconds: 300,      // Default 5m graceful shutdown
 
-	MaxKilobitsPerSecond:       10000, // Default 10Mbps
-	MaxCacheSizeInMebibytes:    10240, // Default 10GB
-	MaxReportedSizeInMebibytes: 10240, // Default 10GB
+	// Overrides
+	OverridePortReport:    0,     // Default to advertise for port 443
+	OverrideAddressReport: "",    // Default to not overriding address report
+	OverrideSizeReport:    10240, // Default 10GB
+	OverrideUpstream:      "",    // Default to nil to follow upstream by controller
 
+	// Node
+	ClientPort:              443,   // Default to listen for requests on port 443
+	MaxKilobitsPerSecond:    10000, // Default 10Mbps
+	MaxCacheSizeInMebibytes: 10240, // Default 10GB
+
+	// Cache
 	CacheScanIntervalInSeconds: 300,  // Default 5m scan interval
 	CacheRefreshAgeInSeconds:   3600, // Default 1h cache refresh age
 	MaxCacheScanTimeInSeconds:  15,   // Default 15s max scan period
 
-	AllowHTTP2:              true,  // Allow HTTP2 by default
-	AllowUpstreamPooling:    true,  // Allow upstream pooling by default
-	AllowVisitorRefresh:     false, // Default to not allow visitors to force-refresh images through Cache-Control
+	// Performance
+	LowMemoryMode:        false, // Default to not doing low-memory mode
+	AllowHTTP2:           true,  // Allow HTTP2 by default
+	AllowUpstreamPooling: true,  // Allow upstream pooling by default
+
+	// Security
+	AllowVisitorRefresh:    false, // Default to not allow visitors to force-refresh images through
+	RejectInvalidSNI:       false, // Default to not rejecting valid SNIs
+	RejectInvalidTokens:    true,  // Default to reject invalid tokens
+	SendServerHeader:       false, // Default to not send server headers
+	UseReverseProxyHeaders: false, // Default to not using X-Forwarded-For header in proxy
+	VerifyImageIntegrity:   false, // Default to not verify image integrity
+
+	// Metrics
 	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
 	MaxMindLicenseKey:       "",    // Default to not have any MaxMind Geolocation DB
-	OverrideUpstream:        "",    // Default to nil to follow upstream by controller
-	RejectInvalidTokens:     true,  // Default to reject invalid tokens
-	VerifyImageIntegrity:    false, // Default to not verify image integrity
 
+	// Log
 	LogLevel:              "trace", // Default to "trace" for all logs
 	MaxLogSizeInMebibytes: 64,      // Default to maximum log size of 64MiB
 	MaxLogBackups:         3,       // Default to maximum log backups of 3
 	MaxLogAgeInDays:       7,       // Default to maximum log age of 7 days
+
+	// Development
+	APIBackend: "https://api.mangadex.network", // Default to "https://api.mangadex.network"
 }
 var serverResponse ServerResponse
 var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
+
+var clientHostname string
+
+var ConfigFilePath string
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Start timer
@@ -120,22 +144,22 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// If configured to reject invalid tokens
-	if clientSettings.RejectInvalidTokens {
-		// Check if it is a test chapter
-		if !isTestChapter(tokens["chapter_hash"]) {
-			// Verify token if checking for invalid token and not a test chapter
-			code, err := verifyToken(tokens["token"], tokens["chapter_hash"])
-			if err != nil {
-				requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
-				w.WriteHeader(code)
-				clientDroppedTotal.Inc()
-				return
-			}
+	if clientSettings.RejectInvalidTokens && !serverResponse.DisableTokens {
+		// Verify token if checking for invalid token and not a test chapter
+		code, err := verifyToken(tokens["token"], tokens["chapter_hash"])
+		if err != nil {
+			requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
+			w.WriteHeader(code)
+			clientDroppedTotal.Inc()
+			return
 		}
 	}
 
 	// Create sanitized url if everything checks out
 	sanitizedURL := "/" + tokens["image_type"] + "/" + tokens["chapter_hash"] + "/" + tokens["image_filename"]
+
+	// Update requestLogger with new fields
+	requestLogger = log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer"), "token": tokens["token"], "image_type": tokens["image_type"], "chapter_hash": tokens["chapter_hash"], "filename": tokens["image_filename"]})
 
 	// Update last request
 	timeLastRequest = time.Now()
@@ -147,13 +171,17 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add server headers
-	serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", clientVersion, specVersion)
-	w.Header().Set("Access-Control-Allow-Origin", "https://mangadex.org")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Expose-Headers", "*")
 	w.Header().Set("Cache-Control", "public, max-age=1209600")
-	w.Header().Set("Server", serverHeader)
-	w.Header().Set("Timing-Allow-Origin", "https://mangadex.org")
+	w.Header().Set("Timing-Allow-Origin", "*")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+
+	// Depending on client configuration, choose to hide Server header identifier
+	if clientSettings.SendServerHeader {
+		serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", ClientVersion, ClientSpecification)
+		w.Header().Set("Server", serverHeader)
+	}
 
 	// Log request
 	requestLogger.WithFields(logrus.Fields{"event": "received"}).Infof("Request from %s received", remoteAddr)
@@ -168,33 +196,42 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load cache
-	imageFromCache, modTime, err := cache.Get(sanitizedURL)
+	// Load image from cache
+	imageFile, imageSize, imageModTime, err := cache.Get(sanitizedURL)
 
 	// Check image integrity if found in cache
-	ok := (err == nil)
-	if ok {
-		// Check image content type
-		contentType := http.DetectContentType(imageFromCache)
-		if !strings.Contains(contentType, "image") {
-			ok = false
-		}
+	var imageBuffer bytes.Buffer
+	imageOk := (err == nil)
+	if imageOk {
+		// Close image file at the end of goroutine
+		defer imageFile.Close()
 
-		// Check SHA256 hash if exists in URL (might be computationally heavy)
-		if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
-			subTokens := strings.Split(tokens["image_filename"], "-")
-			if len(subTokens) == 2 {
-				// Check given hash length
-				givenHash := strings.Split(subTokens[1], ".")[0]
-				if len(givenHash) == 64 {
-					// Calculate hash
-					calculatedHash := fmt.Sprintf("%x", sha256.Sum256(imageFromCache))
+		// Check if client is running in low-memory mode
+		if !clientSettings.LowMemoryMode {
+			// Load image from disk to buffer if not low-memory mode
+			imageBuffer.Grow(int(imageSize))
+			io.Copy(&imageBuffer, imageFile)
 
-					// Compare hash
-					if givenHash != calculatedHash {
-						requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
-						clientCorruptedTotal.Inc()
-						ok = false
+			// Check if verifying image integrity
+			if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
+				// Check and get hash from image filename
+				subTokens := strings.Split(tokens["image_filename"], "-")
+				if len(subTokens) == 2 {
+					// Check and get given hash length
+					givenHash := strings.Split(subTokens[1], ".")[0]
+					if len(givenHash) == 64 {
+						// Calculate actual image hash
+						calculatedHash := fmt.Sprintf("%x", sha256.Sum256(imageBuffer.Bytes()))
+
+						// Compare hash
+						if givenHash != calculatedHash {
+							// Log cache corrupted
+							requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
+							clientCorruptedTotal.Inc()
+
+							// Set imageOk to false
+							imageOk = false
+						}
 					}
 				}
 			}
@@ -207,13 +244,13 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		requestLogger.WithFields(logrus.Fields{"event": "no-cache"}).Debugf("Request from %s ignored cache", remoteAddr)
 		clientRefreshedTotal.Inc()
 
-		// Set ok to false
-		ok = false
+		// Set imageOk to false
+		imageOk = false
 	}
 
 	// Check if image exists and is a proper image and if cache-control is set
 	imageLength := 0
-	if !ok {
+	if !imageOk {
 		// Log cache miss
 		requestLogger.WithFields(logrus.Fields{"event": "miss"}).Debugf("Request from %s missed cache", remoteAddr)
 		clientMissedTotal.Inc()
@@ -281,10 +318,10 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		// Update bytes downloaded
 		imageLength = len(imageBuffer.Bytes())
 		clientDownloadedBytesTotal.Add(imageLength)
-		requestLogger.WithFields(logrus.Fields{"event": "committed", "image_length": imageLength}).Debug("Request from %s committed with size %d bytes", imageLength)
+		requestLogger.WithFields(logrus.Fields{"event": "committed", "image_length": imageLength}).Debugf("Request from %s committed with size %d bytes", remoteAddr, imageLength)
 	} else {
 		// Get length
-		imageLength = len(imageFromCache)
+		imageLength = int(imageSize)
 
 		// Log cache hit
 		requestLogger.WithFields(logrus.Fields{"event": "hit"}).Debugf("Request from %s hit cache", remoteAddr)
@@ -293,7 +330,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Set Content-Length & Last-Modified
 		w.Header().Set("Content-Length", strconv.Itoa(imageLength))
-		w.Header().Set("Last-Modified", modTime.Format(http.TimeFormat))
+		w.Header().Set("Last-Modified", imageModTime.Format(http.TimeFormat))
 
 		// Set timing header
 		processedTime := time.Since(startTime).Milliseconds()
@@ -301,9 +338,14 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		clientRequestProcessSeconds.Update(float64(processedTime) / 1000.0)
 		w.Header().Set("X-Time-Taken", strconv.Itoa(int(processedTime)))
 
-		// Convert bytes object into reader and send to client
-		imageReader := bytes.NewReader(imageFromCache)
-		_, err := io.Copy(w, imageReader)
+		// Stream image to client
+		var err error
+		if imageBuffer.Len() == 0 {
+			_, err = io.Copy(w, imageFile)
+		} else {
+			imageReader := bytes.NewReader(imageBuffer.Bytes())
+			_, err = io.Copy(w, imageReader)
+		}
 
 		// Check if image was streamed properly
 		if err != nil {
@@ -364,7 +406,7 @@ func StartServer() {
 	)
 	defer cache.Close()
 
-	// Prepare geoip
+	// Prepare MaxMind geolocation database
 	if clientSettings.MaxMindLicenseKey != "" {
 		log.Warnf("Loading geolocation data in the background...")
 		go prepareGeoIPDatabase()
@@ -372,49 +414,56 @@ func StartServer() {
 	}
 
 	// Prepare upstream client
-	tr := &http.Transport{
-		MaxIdleConns:      10,
-		IdleConnTimeout:   60 * time.Second,
-		DisableKeepAlives: !clientSettings.AllowUpstreamPooling,
-	}
 	client = &http.Client{
-		Transport: tr,
-		Timeout:   30 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:      10,
+			IdleConnTimeout:   60 * time.Second,
+			DisableKeepAlives: !clientSettings.AllowUpstreamPooling,
+		},
+		Timeout: 30 * time.Second,
 	}
 
 	// Register shutdown handler
-	serverShutdownHandler()
+	registerShutdownHandler()
 
-	// Retrieve TLS certificates
+	// Retrieve TLS certificate
 	serverResponse = *backendPing()
 	if serverResponse.TLS.Certificate == "" {
 		log.Fatalln("Unable to contact API server!")
 	}
 
-	// Attempt to parse TLS data
+	// Parse TLS certificate
 	keyPair, err := tls.X509KeyPair([]byte(serverResponse.TLS.Certificate), []byte(serverResponse.TLS.PrivateKey))
 	if err != nil {
 		log.Fatalf("Cannot parse TLS data %v - %v", serverResponse, err)
 	}
 
 	// Start background worker
-	go backgroundWorker()
+	go startBackgroundWorker()
 
-	// Prepare server
+	// Prepare router
 	r := mux.NewRouter()
+
+	// Prepare paths
+	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
+	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
+
+	// Handle Prometheus metrics
 	if clientSettings.EnablePrometheusMetrics {
 		r.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
 			metrics.WritePrometheus(w, true)
 		})
 	}
 
-	// Prepare paths
-	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
-	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
+	// If configured behind reverse proxies
+	if clientSettings.UseReverseProxyHeaders {
+		r.Use(handlers.ProxyHeaders)
+	}
 
+	// Set router
 	http.Handle("/", r)
 
-	// Start proxy server
+	// Start server
 	err = listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, keyPair, r)
 	if err != nil {
 		log.Fatalf("Cannot start server: %v", err)
