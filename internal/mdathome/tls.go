@@ -32,25 +32,32 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 		return
 	}
 
-	// Peek into the ClientHello message
-	clientHello, conn, _ := tlshowdy.Peek(tc)
-
 	// Check SNI value if configured
 	if clientSettings.RejectInvalidSNI {
+		// Peek into the ClientHello message
+		clientHello, conn, errs := tlshowdy.Peek(tc)
+		if clientHello == nil || errs != nil {
+			// Close connection and return for fast fail
+			err := conn.Close()
+			return conn, err
+		}
+
 		// Check to allow for both mangadex.network SNI and localhost SNI
 		if clientHello.ServerName != clientHostname && clientHello.ServerName != "localhost" {
 			// Log
-			err := errors.New(fmt.Sprintf("blocked unauthorised SNI request: %s", clientHello.ServerName))
-			log.Warn(err)
+			log.Warn(fmt.Sprintf("blocked unauthorised SNI request: %s", clientHello.ServerName))
 
 			// Close connection and return for fast fail
-			conn.Close()
-			return conn, nil
+			err := conn.Close()
+			return conn, err
 		}
+
+		// Return connection
+		return conn, nil
 	}
 
 	// Return connection
-	return conn, nil
+	return tc, nil
 }
 
 func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate, handler http.Handler) error {
