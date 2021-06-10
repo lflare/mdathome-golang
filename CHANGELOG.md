@@ -14,9 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Fixed
-- [2021-06-10] Properly refixed TLS SNI random crashes again by [@lflare].
 
 ### Security
+
+## [v1.11.4] - 2021-06-10
+### Fixed
+- [2021-06-10] Properly refixed TLS SNI random crashes again by [@lflare].
 
 ## [v1.11.3] - 2021-06-07
 ### Changed
