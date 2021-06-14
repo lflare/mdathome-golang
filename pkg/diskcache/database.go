@@ -147,16 +147,38 @@ func (c *Cache) ShrinkDatabase() error {
 		}
 	}()
 
-	// Read old database
-	data := readDatabase(c.database)
-	defer c.database.Close()
-	saveDatabase(data, c.directory+"/cache.db.tmp")
-	c.database.Close()
+	// Prepare new database location
+	newDB, err := bolt.Open(c.directory+"/cache.db.tmp", 0600, nil)
+	if err != nil {
+		log.Errorf("Failed to open new database location: %v", err)
+		os.Exit(1)
+	}
+
+	// Attempt to compact database
+	err = bolt.Compact(newDB, c.database, 0)
+	if err != nil {
+		log.Errorf("Failed to compact database: %v", err)
+		os.Exit(1)
+	}
+
+	// Close new database
+	err = newDB.Close()
+	if err != nil {
+		log.Errorf("Failed to close new database: %v", err)
+		os.Exit(1)
+	}
+
+	// Close old database
+	err = c.database.Close()
+	if err != nil {
+		log.Errorf("Failed to close old database: %v", err)
+		os.Exit(1)
+	}
 
 	// Rename database files
 	os.Rename(c.directory+"/cache.db", c.directory+"/cache.db.bak")
 	os.Rename(c.directory+"/cache.db.tmp", c.directory+"/cache.db")
-	log.Println("Database backed up!")
+	log.Infof("Database backed up and renamed!")
 
 	// Stop goroutine
 	handler <- struct{}{}
