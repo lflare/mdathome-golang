@@ -469,7 +469,7 @@ func StartServer() {
 	}
 
 	// Set router
-	http.Handle("/", r)
+	http.Handle("/", handlers.RecoveryHandler()(handlers.CompressHandler(r)))
 
 	// Start server
 	err = listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, keyPair, r)
