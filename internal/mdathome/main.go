@@ -89,7 +89,10 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract request variables
 	tokens := mux.Vars(r)
-	remoteAddr, _, _ := net.SplitHostPort(r.RemoteAddr)
+	remoteAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		remoteAddr = r.RemoteAddr
+	}
 
 	// Prepare logger for request
 	requestLogger := log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer")})
