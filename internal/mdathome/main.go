@@ -451,6 +451,11 @@ func StartServer() {
 	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
 	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
 
+	// Add robots.txt
+	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("User-Agent: *\nDisallow: /\n"))
+	})
+
 	// Handle Prometheus metrics
 	if clientSettings.EnablePrometheusMetrics {
 		r.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {

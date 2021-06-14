@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - [2021-06-14] Fixed reverse proxy `X-Forwarded-For` IP handling by [@lflare].
+- [2021-06-14] Automatically serve robots.txt, fixes #19 by [@lflare].
 
 ### Security
 
