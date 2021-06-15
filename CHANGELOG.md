@@ -6,20 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- [2021-06-14] Added experimental auto-recovery and gzip support by [@lflare].
 
 ### Changed
-- [2021-06-14] Took advantage of new `bolt.Compact()` command for database shrinking by [@lflare].
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- [2021-06-14] Fixed reverse proxy `X-Forwarded-For` IP handling by [@lflare].
-- [2021-06-14] Automatically serve robots.txt, fixes #19 by [@lflare].
 
 ### Security
+
+## [v1.11.5] - 2021-06-15
+### Added
+- [2021-06-14] Added experimental auto-recovery and gzip support by [@lflare].
+
+### Changed
+- [2021-06-14] Took advantage of new `bolt.Compact()` command for database shrinking by [@lflare].
+
+### Fixed
+- [2021-06-14] Fixed reverse proxy `X-Forwarded-For` IP handling by [@lflare].
+- [2021-06-14] Automatically serve robots.txt, fixes #19 by [@lflare].
 
 ## [v1.11.4] - 2021-06-10
 ### Fixed
