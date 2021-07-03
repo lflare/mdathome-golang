@@ -74,7 +74,7 @@ func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      handler,
-		ReadTimeout:  30 * time.Second,
+		ReadTimeout:  1 * time.Minute,
 		WriteTimeout: 1 * time.Minute,
 	}
 	config := &tls.Config{
