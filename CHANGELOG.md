@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Increased timeout for Read by [@lflare].
+- Increase timeouts to 5 minutes by [@lflare].
 
 ### Deprecated
 
