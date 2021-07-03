@@ -8,17 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- Increased timeout for Read by [@lflare].
-- Increase timeouts to 5 minutes by [@lflare].
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- Ignore non-existant cache files when deleting by [@lflare].
 
 ### Security
+
+## [v1.11.6] - 2021-07-03
+### Changed
+- Increased timeout for Read by [@lflare].
+- Increase timeouts to 5 minutes by [@lflare].
+
+### Fixed
+- Ignore non-existant cache files when deleting by [@lflare].
 
 ## [v1.11.5] - 2021-06-15
 ### Added
