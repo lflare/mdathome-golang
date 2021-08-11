@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [v1.12.0] - 2021-08-11
+### Added
+- Added TLS certificate reloader by [@lflare].
+
 ## [v1.11.6] - 2021-07-03
 ### Changed
 - Increased timeout for Read by [@lflare].
