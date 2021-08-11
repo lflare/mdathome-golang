@@ -3,7 +3,6 @@ package mdathome
 import (
 	"bytes"
 	"crypto/sha256"
-	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -73,6 +72,7 @@ var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
+var certHandler *certificateHandler
 
 var clientHostname string
 
@@ -429,17 +429,17 @@ func StartServer() {
 	// Register shutdown handler
 	registerShutdownHandler()
 
-	// Retrieve TLS certificate
-	serverResponse = *backendPing()
-	if serverResponse.TLS.Certificate == "" {
-		log.Fatalln("Unable to contact API server!")
-	}
+	// Prepare TLS reloader
+	certHandler = NewCertificateReloader(backendGetCertificate())
+	go func() {
+		for {
+			time.Sleep(24 * time.Hour)
 
-	// Parse TLS certificate
-	keyPair, err := tls.X509KeyPair([]byte(serverResponse.TLS.Certificate), []byte(serverResponse.TLS.PrivateKey))
-	if err != nil {
-		log.Fatalf("Cannot parse TLS data %v - %v", serverResponse, err)
-	}
+			// Update certificate
+			log.Infof("Reloading certificates...")
+			certHandler.updateCertificate(backendGetCertificate())
+		}
+	}()
 
 	// Start background worker
 	go startBackgroundWorker()
@@ -472,7 +472,7 @@ func StartServer() {
 	http.Handle("/", handlers.RecoveryHandler()(handlers.CompressHandler(r)))
 
 	// Start server
-	err = listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, keyPair, r)
+	err := listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, r)
 	if err != nil {
 		log.Fatalf("Cannot start server: %v", err)
 	}

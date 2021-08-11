@@ -3,6 +3,7 @@ package mdathome
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
 	"net"
@@ -113,4 +114,21 @@ func backendShutdown() {
 		log.Fatalf("Failed to shutdown server gracefully: %v", err)
 	}
 	defer r.Body.Close()
+}
+
+func backendGetCertificate() tls.Certificate {
+	// Make backend ping
+	serverResponse = *backendPing()
+	if serverResponse.TLS.Certificate == "" {
+		log.Fatalln("Unable to contact API server!")
+	}
+
+	// Parse TLS certificate
+	keyPair, err := tls.X509KeyPair([]byte(serverResponse.TLS.Certificate), []byte(serverResponse.TLS.PrivateKey))
+	if err != nil {
+		log.Fatalf("Cannot parse TLS data %v - %v", serverResponse, err)
+	}
+
+	// Return keyPair
+	return keyPair
 }
