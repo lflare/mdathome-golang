@@ -17,9 +17,7 @@ builds:
       - "{{.Env.LDFLAGS}}"
     hooks:
       post:
-        - mv "{{.Path}}" "build/{{.ProjectName}}-{{.Target}}{{.Ext}}.tmp"
-        - rmdir "{{dir .Path}}"
-        - mv "build/{{.ProjectName}}-{{.Target}}{{.Ext}}.tmp" "build/{{.ProjectName}}-{{.Version}}-{{.Target}}{{.Ext}}"
+        - /bin/sh -c "upx -q '{{.Path}}' || true"
     goos:
       - aix
       - android
