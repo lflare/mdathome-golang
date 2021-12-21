@@ -13,7 +13,7 @@ require (
 	github.com/spacemonkeygo/tlshowdy v0.0.0-20160207005338-8fa2cec1d7cd
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	go.etcd.io/bbolt v1.3.6
-	golang.org/x/crypto v0.0.0-20211209193657-4570a0811e8b
+	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
 )
 
 require (
