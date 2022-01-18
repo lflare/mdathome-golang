@@ -6,18 +6,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added GitHub Actions build and publish mechanism by [@lflare].
 
 ### Changed
-- [2021-06-02] Removed `upx` from macOS/Darwin builds by [@lflare].
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- [2021-06-07] Fixed TLS SNI random crashes by [@lflare].
 
 ### Security
+
+## [v1.12.0] - 2021-08-11
+### Added
+- Added TLS certificate reloader by [@lflare].
+
+## [v1.11.6] - 2021-07-03
+### Changed
+- Increased timeout for Read by [@lflare].
+- Increase timeouts to 5 minutes by [@lflare].
+
+### Fixed
+- Ignore non-existant cache files when deleting by [@lflare].
+
+## [v1.11.5] - 2021-06-15
+### Added
+- [2021-06-14] Added experimental auto-recovery and gzip support by [@lflare].
+
+### Changed
+- [2021-06-14] Took advantage of new `bolt.Compact()` command for database shrinking by [@lflare].
+
+### Fixed
+- [2021-06-14] Fixed reverse proxy `X-Forwarded-For` IP handling by [@lflare].
+- [2021-06-14] Automatically serve robots.txt, fixes #19 by [@lflare].
+
+## [v1.11.4] - 2021-06-10
+### Fixed
+- [2021-06-10] Properly refixed TLS SNI random crashes again by [@lflare].
+
+## [v1.11.3] - 2021-06-07
+### Changed
+- [2021-06-02] Removed `upx` from macOS/Darwin builds by [@lflare].
+
+### Fixed
+- [2021-06-07] Fixed TLS SNI random crashes by [@lflare].
 
 ## [v1.11.2] - 2021-05-30
 ### Added

@@ -19,48 +19,54 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	// Accept TCP connection
 	tc, err := ln.AcceptTCP()
 	if err != nil {
+		log.Warn(fmt.Sprintf("failed to AcceptTCP(): %s", err))
 		return
 	}
 
 	// Configure connection
 	err = tc.SetKeepAlive(true)
 	if err != nil {
+		log.Warn(fmt.Sprintf("failed to SetKeepAlive(): %s", err))
 		return
 	}
 	err = tc.SetKeepAlivePeriod(1 * time.Minute)
 	if err != nil {
+		log.Warn(fmt.Sprintf("failed to SetKeepAlivePeriod(): %s", err))
 		return
 	}
 
-	// Check SNI value if configured
+	// Check SNI if configured to do so
 	if clientSettings.RejectInvalidSNI {
 		// Peek into the ClientHello message
-		clientHello, conn, errs := tlshowdy.Peek(tc)
-		if clientHello == nil || errs != nil {
-			// Close connection and return for fast fail
-			err := conn.Close()
-			return conn, err
+		clientHello, conn, e := tlshowdy.Peek(tc)
+
+		// Check ClientHello SNI for both mangadex.network or localhost domain
+		if clientHello != nil && (clientHello.ServerName == clientHostname || clientHello.ServerName == "localhost") {
+			return conn, nil
 		}
 
-		// Check to allow for both mangadex.network SNI and localhost SNI
-		if clientHello.ServerName != clientHostname && clientHello.ServerName != "localhost" {
-			// Log
-			log.Warn(fmt.Sprintf("blocked unauthorised SNI request: %s", clientHello.ServerName))
-
-			// Close connection and return for fast fail
-			err := conn.Close()
-			return conn, err
+		// If no ClientHello, or if error is present
+		if e != nil {
+			log.Warn(fmt.Sprintf("failed to peek into TLS body: %s", e))
+		} else if clientHello == nil {
+			log.Warn(fmt.Sprintf("failed to extract ClientHello: %s", e))
 		}
 
-		// Return connection
-		return conn, nil
+		// Close connection and return for fast fail
+		if conn != nil {
+			conn.Close()
+			return conn, nil
+		} else {
+			return tc, nil
+		}
+
 	}
 
-	// Return connection
+	// Return default connection
 	return tc, nil
 }
 
-func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate, handler http.Handler) error {
+func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, handler http.Handler) error {
 	if addr == "" {
 		return errors.New("invalid address string")
 	}
@@ -68,8 +74,8 @@ func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      handler,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 1 * time.Minute,
+		ReadTimeout:  5 * time.Minute,
+		WriteTimeout: 5 * time.Minute,
 	}
 	config := &tls.Config{
 		PreferServerCipherSuites: true,
@@ -80,8 +86,7 @@ func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, cert tls.Certificate
 	}
 
 	// Prepare certificates
-	config.Certificates = make([]tls.Certificate, 1)
-	config.Certificates[0] = cert
+	config.GetCertificate = certHandler.GetCertificate()
 
 	// If allowing http2
 	if clientSettings.AllowHTTP2 {

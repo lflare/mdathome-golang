@@ -25,8 +25,7 @@ func (c *Cache) DeleteFile(file string) error {
 	// Delete file off disk
 	err := os.Remove(c.directory + "/" + dir + "/" + file)
 	if err != nil {
-		err = fmt.Errorf("File does not seem to exist on disk: %v", err)
-		return err
+		log.Errorf("File does not seem to exist on disk, ignoring: %v", err)
 	}
 
 	// Delete key off database
@@ -186,7 +185,6 @@ func (c *Cache) StartBackgroundThread() {
 				err := c.DeleteFile(v.Key)
 				if err != nil {
 					log.Warnf("Unable to delete file in key %s: %v", v.Key, err)
-					continue
 				}
 
 				// Add to deletedSize

@@ -3,7 +3,6 @@ package mdathome
 import (
 	"bytes"
 	"crypto/sha256"
-	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -73,6 +72,7 @@ var cache *diskcache.Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
+var certHandler *certificateHandler
 
 var clientHostname string
 
@@ -89,7 +89,10 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract request variables
 	tokens := mux.Vars(r)
-	remoteAddr, _, _ := net.SplitHostPort(r.RemoteAddr)
+	remoteAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		remoteAddr = r.RemoteAddr
+	}
 
 	// Prepare logger for request
 	requestLogger := log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer")})
@@ -426,17 +429,17 @@ func StartServer() {
 	// Register shutdown handler
 	registerShutdownHandler()
 
-	// Retrieve TLS certificate
-	serverResponse = *backendPing()
-	if serverResponse.TLS.Certificate == "" {
-		log.Fatalln("Unable to contact API server!")
-	}
+	// Prepare TLS reloader
+	certHandler = NewCertificateReloader(backendGetCertificate())
+	go func() {
+		for {
+			time.Sleep(24 * time.Hour)
 
-	// Parse TLS certificate
-	keyPair, err := tls.X509KeyPair([]byte(serverResponse.TLS.Certificate), []byte(serverResponse.TLS.PrivateKey))
-	if err != nil {
-		log.Fatalf("Cannot parse TLS data %v - %v", serverResponse, err)
-	}
+			// Update certificate
+			log.Infof("Reloading certificates...")
+			certHandler.updateCertificate(backendGetCertificate())
+		}
+	}()
 
 	// Start background worker
 	go startBackgroundWorker()
@@ -447,6 +450,11 @@ func StartServer() {
 	// Prepare paths
 	r.HandleFunc("/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
 	r.HandleFunc("/{token}/{image_type}/{chapter_hash}/{image_filename}", requestHandler)
+
+	// Add robots.txt
+	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("User-Agent: *\nDisallow: /\n"))
+	})
 
 	// Handle Prometheus metrics
 	if clientSettings.EnablePrometheusMetrics {
@@ -461,10 +469,10 @@ func StartServer() {
 	}
 
 	// Set router
-	http.Handle("/", r)
+	http.Handle("/", handlers.RecoveryHandler()(handlers.CompressHandler(r)))
 
 	// Start server
-	err = listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, keyPair, r)
+	err := listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, r)
 	if err != nil {
 		log.Fatalf("Cannot start server: %v", err)
 	}
