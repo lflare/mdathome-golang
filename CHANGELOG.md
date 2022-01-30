@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Added GitHub Actions build and publish mechanism by [@lflare].
+- Added configuration of visitor timeouts by [@lflare].
 
 ### Changed
 

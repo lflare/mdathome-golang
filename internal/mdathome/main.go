@@ -45,6 +45,7 @@ var clientSettings = ClientSettings{
 	LowMemoryMode:        false, // Default to not doing low-memory mode
 	AllowHTTP2:           true,  // Allow HTTP2 by default
 	AllowUpstreamPooling: true,  // Allow upstream pooling by default
+	ClientTimeout:        60,    // Default to 1 minute timeout
 
 	// Security
 	AllowVisitorRefresh:    false, // Default to not allow visitors to force-refresh images through
@@ -472,7 +473,7 @@ func StartServer() {
 	http.Handle("/", handlers.RecoveryHandler()(handlers.CompressHandler(r)))
 
 	// Start server
-	err := listenAndServeTLSKeyPair(":"+strconv.Itoa(clientSettings.ClientPort), clientSettings.AllowHTTP2, r)
+	err := listenAndServeTLSKeyPair(clientSettings, r)
 	if err != nil {
 		log.Fatalf("Cannot start server: %v", err)
 	}

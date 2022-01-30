@@ -2,10 +2,10 @@ package mdathome
 
 import (
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/spacemonkeygo/tlshowdy"
@@ -66,16 +66,16 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	return tc, nil
 }
 
-func listenAndServeTLSKeyPair(addr string, allowHTTP2 bool, handler http.Handler) error {
-	if addr == "" {
-		return errors.New("invalid address string")
-	}
+func listenAndServeTLSKeyPair(clientSettings ClientSettings, handler http.Handler) error {
+	// Build address
+	addr := ":" + strconv.Itoa(clientSettings.ClientPort)
 
+	// Build HTTP server configuration
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      handler,
-		ReadTimeout:  5 * time.Minute,
-		WriteTimeout: 5 * time.Minute,
+		ReadTimeout:  time.Second * time.Duration(clientSettings.ClientTimeout),
+		WriteTimeout: time.Second * time.Duration(clientSettings.ClientTimeout),
 	}
 	config := &tls.Config{
 		PreferServerCipherSuites: true,

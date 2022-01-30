@@ -31,6 +31,7 @@ type ClientSettings struct {
 	AllowHTTP2           bool `json:"allow_http2"`
 	AllowUpstreamPooling bool `json:"allow_upstream_pooling"`
 	LowMemoryMode        bool `json:"low_memory_mode"`
+	ClientTimeout        int  `json:"client_timeout"`
 
 	// Security
 	AllowVisitorRefresh    bool `json:"allow_visitor_refresh"`
