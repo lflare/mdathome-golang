@@ -6,8 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Added GitHub Actions build and publish mechanism by [@lflare].
-- Added configuration of visitor timeouts by [@lflare].
 
 ### Changed
 
@@ -18,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [v1.12.1] - 2022-01-30
+### Added
+- Added GitHub Actions build and publish mechanism by [@lflare].
+- Added configuration of visitor timeouts by [@lflare].
 
 ## [v1.12.0] - 2021-08-11
 ### Added
