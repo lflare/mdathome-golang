@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- [2022-02-20] Added fallback invalid hostname rejecter by [@lflare].
 
 ### Changed
 - [2022-02-20] Disabled buggy TLS SNI whitelist by default by [@lflare].

@@ -53,6 +53,7 @@ var clientSettings = ClientSettings{
 	// Security
 	AllowVisitorRefresh:    false, // Default to not allow visitors to force-refresh images through
 	RejectInvalidSNI:       false, // Default to not rejecting valid SNIs
+	RejectInvalidHostname:  false, // Default to rejecting invalid hostnames
 	RejectInvalidTokens:    true,  // Default to reject invalid tokens
 	SendServerHeader:       false, // Default to not send server headers
 	UseReverseProxyHeaders: false, // Default to not using X-Forwarded-For header in proxy
@@ -129,6 +130,15 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		clientRequestDurationSeconds = metrics.GetOrCreateHistogram(fmt.Sprintf("client_request_duration_seconds%s", labels))
 		clientRequestProcessSeconds  = metrics.GetOrCreateHistogram(fmt.Sprintf("client_request_process_seconds%s", labels))
 	)
+
+	// Check if hostname is rejected
+	requestHostname := strings.Split(r.Host, ":")[0]
+	if clientSettings.RejectInvalidHostname && requestHostname != clientHostname {
+		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid hostname"}).Warnf("Request from %s dropped due to invalid hostname: %s", remoteAddr, requestHostname)
+		clientDroppedTotal.Inc()
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Sanitized URL
 	if tokens["image_type"] != "data" && tokens["image_type"] != "data-saver" {
