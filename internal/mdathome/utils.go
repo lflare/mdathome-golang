@@ -57,11 +57,6 @@ func loadClientSettings() {
 }
 
 func migrateClientSettings(cs *ClientSettings) {
-	// Return early if fully migrated
-	if cs.Version == ClientSettingsVersion {
-		return
-	}
-
 	// Migrate from settings before version 1
 	switch cs.Version {
 	case 0:
