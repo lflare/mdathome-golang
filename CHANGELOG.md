@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- [2022-02-20] Disabled buggy TLS SNI whitelist by default by [@lflare].
 
 ### Deprecated
 
@@ -19,20 +20,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.12.1] - 2022-01-30
 ### Added
-- Added GitHub Actions build and publish mechanism by [@lflare].
-- Added configuration of visitor timeouts by [@lflare].
+- [2022-01-30] Added GitHub Actions build and publish mechanism by [@lflare].
+- [2022-01-30] Added configuration of visitor timeouts by [@lflare].
 
 ## [v1.12.0] - 2021-08-11
 ### Added
-- Added TLS certificate reloader by [@lflare].
+- [2021-08-11] Added TLS certificate reloader by [@lflare].
 
 ## [v1.11.6] - 2021-07-03
 ### Changed
-- Increased timeout for Read by [@lflare].
-- Increase timeouts to 5 minutes by [@lflare].
+- [2021-07-03] Increased timeout for Read by [@lflare].
+- [2021-07-03] Increase timeouts to 5 minutes by [@lflare].
 
 ### Fixed
-- Ignore non-existant cache files when deleting by [@lflare].
+- [2021-07-03] Ignore non-existant cache files when deleting by [@lflare].
 
 ## [v1.11.5] - 2021-06-15
 ### Added
