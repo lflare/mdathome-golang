@@ -24,21 +24,31 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	}
 
 	// Configure connection
-	err = tc.SetKeepAlive(true)
-	if err != nil {
+	if err = tc.SetKeepAlive(true); err != nil {
 		log.Warn(fmt.Sprintf("failed to SetKeepAlive(): %s", err))
 		return
 	}
-	err = tc.SetKeepAlivePeriod(1 * time.Minute)
-	if err != nil {
+	if err = tc.SetKeepAlivePeriod(1 * time.Minute); err != nil {
 		log.Warn(fmt.Sprintf("failed to SetKeepAlivePeriod(): %s", err))
 		return
 	}
 
 	// Check SNI if configured to do so
 	if clientSettings.RejectInvalidSNI {
+		// Set deadline to prevent connection leaks
+		if err = tc.SetDeadline(time.Now().Add(5 * time.Second)); err != nil {
+			log.Warn(fmt.Sprintf("failed to SetDeadline(): %s", err))
+			return
+		}
+
 		// Peek into the ClientHello message
 		clientHello, conn, e := tlshowdy.Peek(tc)
+
+		// Clear deadline
+		if err = tc.SetDeadline(time.Time{}); err != nil {
+			log.Warn(fmt.Sprintf("failed to clear SetDeadline(): %s", err))
+			return
+		}
 
 		// Check ClientHello SNI for both mangadex.network or localhost domain
 		if clientHello != nil && (clientHello.ServerName == clientHostname || clientHello.ServerName == "localhost") {
