@@ -20,6 +20,9 @@ import (
 )
 
 var clientSettings = ClientSettings{
+	// Version
+	Version: 2,
+
 	// Client
 	LogDirectory:              "log/",   // Default log directory
 	CacheDirectory:            "cache/", // Default cache directory

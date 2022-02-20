@@ -63,10 +63,15 @@ func migrateClientSettings(cs *ClientSettings) {
 	}
 
 	// Migrate from settings before version 1
-	if cs.Version == 0 {
+	switch cs.Version {
+	case 0:
 		cs.OverrideSizeReport = cs.MaxReportedSizeInMebibytes
 		cs.MaxReportedSizeInMebibytes = 0
 		cs.Version = 1
+		fallthrough
+	case 1:
+		cs.RejectInvalidSNI = false
+		cs.Version = 2
 	}
 }
 
