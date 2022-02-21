@@ -132,7 +132,7 @@ func startBackgroundWorker() {
 
 func registerShutdownHandler() {
 	// Hook on to SIGTERM
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	// Start coroutine to wait for SIGTERM

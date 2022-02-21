@@ -227,7 +227,9 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		if !clientSettings.LowMemoryMode {
 			// Load image from disk to buffer if not low-memory mode
 			imageBuffer.Grow(int(imageSize))
-			io.Copy(&imageBuffer, imageFile)
+			if _, err := io.Copy(&imageBuffer, imageFile); err != nil {
+				requestLogger.Errorf("Failed to copy image to buffer: %v", err)
+			}
 
 			// Check if verifying image integrity
 			if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
@@ -243,7 +245,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 						// Compare hash
 						if givenHash != calculatedHash {
 							// Log cache corrupted
-							requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", calculatedHash, givenHash)
+							requestLogger.WithFields(logrus.Fields{"event": "checksum", "given": givenHash, "calculated": calculatedHash}).Warnf("Request from %s generated invalid checksum %s != %s", remoteAddr, calculatedHash, givenHash)
 							clientCorruptedTotal.Inc()
 
 							// Set imageOk to false
@@ -389,13 +391,15 @@ func ShrinkDatabase() {
 	saveClientSettings()
 
 	// Prepare diskcache
-	log.Println("Preparing database...")
+	log.Info("Preparing database...")
 	cache = diskcache.New(clientSettings.CacheDirectory, 0, 0, 0, 0, log, clientCacheSize, clientCacheLimit)
 	defer cache.Close()
 
 	// Attempts to start cache shrinking
-	log.Println("Shrinking database...")
-	cache.ShrinkDatabase()
+	log.Info("Shrinking database...")
+	if err := cache.ShrinkDatabase(); err != nil {
+		log.Errorf("Failed to shrink database: %v", err)
+	}
 }
 
 // StartServer starts the MD@Home client
@@ -451,7 +455,9 @@ func StartServer() {
 
 			// Update certificate
 			log.Infof("Reloading certificates...")
-			certHandler.updateCertificate(backendGetCertificate())
+			if err := certHandler.updateCertificate(backendGetCertificate()); err != nil {
+				log.Errorf("Failed to reload certificate: %v", err)
+			}
 		}
 	}()
 
@@ -467,7 +473,9 @@ func StartServer() {
 
 	// Add robots.txt
 	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("User-Agent: *\nDisallow: /\n"))
+		if _, err := w.Write([]byte("User-Agent: *\nDisallow: /\n")); err != nil {
+			log.Errorf("Failed to write robots.txt: %v", err)
+		}
 	})
 
 	// Handle Prometheus metrics

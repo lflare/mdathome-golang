@@ -122,7 +122,7 @@ func (c *Cache) getAllKeys() ([]KeyPair, error) {
 // ShrinkDatabase manually re-creates the cache.db file and effectively shrinks it
 func (c *Cache) ShrinkDatabase() error {
 	// Hook on to SIGTERM
-	sigtermChannel := make(chan os.Signal)
+	sigtermChannel := make(chan os.Signal, 1)
 	signal.Notify(sigtermChannel, os.Interrupt, syscall.SIGTERM)
 
 	// Start coroutine to wait for SIGTERM
@@ -176,8 +176,12 @@ func (c *Cache) ShrinkDatabase() error {
 	}
 
 	// Rename database files
-	os.Rename(c.directory+"/cache.db", c.directory+"/cache.db.bak")
-	os.Rename(c.directory+"/cache.db.tmp", c.directory+"/cache.db")
+	if err := os.Rename(c.directory+"/cache.db", c.directory+"/cache.db.bak"); err != nil {
+		log.Fatalf("Failed to backup database: %v", err)
+	}
+	if err := os.Rename(c.directory+"/cache.db.tmp", c.directory+"/cache.db"); err != nil {
+		log.Fatalf("Failed to restore new database: %v", err)
+	}
 	log.Infof("Database backed up and renamed!")
 
 	// Stop goroutine

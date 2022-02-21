@@ -37,7 +37,7 @@ func prepareGeoIPDatabase() {
 		// Uncompress archive
 		uncompressedArchive, err := gzip.NewReader(resp.Body)
 		if err != nil {
-			log.Fatal("Failed to uncompress MaxMind database: %v", err)
+			log.Fatalf("Failed to uncompress MaxMind database: %v", err)
 		}
 		defer uncompressedArchive.Close()
 

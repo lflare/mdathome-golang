@@ -119,7 +119,10 @@ func (c *Cache) Set(key string, mtime time.Time, resp []byte) error {
 	}
 
 	// Update modification time
-	os.Chtimes(c.directory+"/"+dir+"/"+key, mtime, mtime)
+	if err := os.Chtimes(c.directory+"/"+dir+"/"+key, mtime, mtime); err != nil {
+		err = fmt.Errorf("Failed to set modification time of image '%s': %v", c.directory+"/"+dir+"/"+key, err)
+		return err
+	}
 
 	// Update database
 	size := len(resp)

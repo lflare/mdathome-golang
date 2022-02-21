@@ -59,7 +59,7 @@ type ClientSettings struct {
 	MaxReportedSizeInMebibytes int `json:"max_reported_size_in_mebibytes,omitempty"`
 }
 
-// ServerRequest stores a single `secret` field for miscellanous operations
+// ServerRequest stores a single `secret` field for miscellaneous operations
 type ServerRequest struct {
 	Secret string `json:"secret"`
 }
