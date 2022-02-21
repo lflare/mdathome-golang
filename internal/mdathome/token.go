@@ -12,17 +12,17 @@ import (
 func verifyToken(tokenString string, chapterHash string) (int, error) {
 	// Check if given token string is empty
 	if tokenString == "" {
-		return 403, fmt.Errorf("Token is empty")
+		return 403, fmt.Errorf("token cannot be empty")
 	}
 
 	// Decode base64-encoded token & key
 	tokenBytes, err := base64.RawURLEncoding.DecodeString(tokenString)
 	if err != nil {
-		return 403, fmt.Errorf("cannot decode token - %v", err)
+		return 403, fmt.Errorf("token is not valid base64: %v", err)
 	}
 	keyBytes, err := base64.StdEncoding.DecodeString(serverResponse.TokenKey)
 	if err != nil {
-		return 403, fmt.Errorf("cannot decode key - %v", err)
+		return 403, fmt.Errorf("key is not valid base64: %v", err)
 	}
 
 	// Copy over byte slices to fixed-length byte arrays for decryption
@@ -40,13 +40,13 @@ func verifyToken(tokenString string, chapterHash string) (int, error) {
 	// Unmarshal to struct
 	token := Token{}
 	if err := json.Unmarshal(data, &token); err != nil {
-		return 403, fmt.Errorf("failed to unmarshal token - %v", err)
+		return 403, fmt.Errorf("failed to unmarshal token from json: %v", err)
 	}
 
 	// Parse expiry time
 	expires, err := time.Parse(time.RFC3339, token.Expires)
 	if err != nil {
-		return 403, fmt.Errorf("failed to parse expiry from token - %v", err)
+		return 403, fmt.Errorf("failed to parse expiry time from token: %v", err)
 	}
 
 	// Check token expiry timing

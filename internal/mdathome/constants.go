@@ -9,3 +9,8 @@ var ClientVersion string
 
 // ClientSpecification is the integer version of the official specification this client is supposed to work against
 const ClientSpecification int = 31
+
+const (
+	KeyCacheDirectory string = "cache.directory"
+	KeyCacheSize      string = "cache.max_size_mebibytes"
+)

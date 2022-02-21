@@ -15,73 +15,18 @@ import (
 	"github.com/VictoriaMetrics/metrics"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/lflare/mdathome-golang/pkg/diskcache"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-var clientSettings = ClientSettings{
-	// Version
-	Version: 2,
-
-	// Client
-	LogDirectory:              "log/",   // Default log directory
-	CacheDirectory:            "cache/", // Default cache directory
-	GracefulShutdownInSeconds: 300,      // Default 5m graceful shutdown
-
-	// Overrides
-	OverridePortReport:    0,     // Default to advertise for port 443
-	OverrideAddressReport: "",    // Default to not overriding address report
-	OverrideSizeReport:    10240, // Default 10GB
-	OverrideUpstream:      "",    // Default to nil to follow upstream by controller
-
-	// Node
-	ClientPort:              443,   // Default to listen for requests on port 443
-	MaxKilobitsPerSecond:    10000, // Default 10Mbps
-	MaxCacheSizeInMebibytes: 10240, // Default 10GB
-
-	// Cache
-	CacheScanIntervalInSeconds: 300,  // Default 5m scan interval
-	CacheRefreshAgeInSeconds:   3600, // Default 1h cache refresh age
-	MaxCacheScanTimeInSeconds:  15,   // Default 15s max scan period
-
-	// Performance
-	LowMemoryMode:        false, // Default to not doing low-memory mode
-	AllowHTTP2:           true,  // Allow HTTP2 by default
-	AllowUpstreamPooling: true,  // Allow upstream pooling by default
-	ClientTimeout:        60,    // Default to 1 minute timeout
-
-	// Security
-	AllowVisitorRefresh:    false, // Default to not allow visitors to force-refresh images through
-	RejectInvalidSNI:       false, // Default to not rejecting valid SNIs
-	RejectInvalidHostname:  false, // Default to rejecting invalid hostnames
-	RejectInvalidTokens:    true,  // Default to reject invalid tokens
-	SendServerHeader:       false, // Default to not send server headers
-	UseReverseProxyHeaders: false, // Default to not using X-Forwarded-For header in proxy
-	VerifyImageIntegrity:   false, // Default to not verify image integrity
-
-	// Metrics
-	EnablePrometheusMetrics: false, // Default to not enable Prometheus metrics
-	MaxMindLicenseKey:       "",    // Default to not have any MaxMind Geolocation DB
-
-	// Log
-	LogLevel:              "trace", // Default to "trace" for all logs
-	MaxLogSizeInMebibytes: 64,      // Default to maximum log size of 64MiB
-	MaxLogBackups:         3,       // Default to maximum log backups of 3
-	MaxLogAgeInDays:       7,       // Default to maximum log age of 7 days
-
-	// Development
-	APIBackend: "https://api.mangadex.network", // Default to "https://api.mangadex.network"
-}
 var serverResponse ServerResponse
-var cache *diskcache.Cache
+var cache *Cache
 var timeLastRequest time.Time
 var running = true
 var client *http.Client
 var certHandler *certificateHandler
 
 var clientHostname string
-
-var ConfigFilePath string
 
 func requestHandler(w http.ResponseWriter, r *http.Request) {
 	// Start timer
@@ -100,7 +45,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Prepare logger for request
-	requestLogger := log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer")})
+	requestLogger := log.WithFields(logrus.Fields{"type": "request", "url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer")})
 
 	// Parse GeoIP
 	labels := ""
@@ -133,7 +78,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check if hostname is rejected
 	requestHostname := strings.Split(r.Host, ":")[0]
-	if clientSettings.RejectInvalidHostname && requestHostname != clientHostname {
+	if viper.GetBool("security.reject_invalid_hostname") && requestHostname != clientHostname {
 		requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid hostname"}).Warnf("Request from %s dropped due to invalid hostname: %s", remoteAddr, requestHostname)
 		clientDroppedTotal.Inc()
 		w.WriteHeader(http.StatusBadRequest)
@@ -161,13 +106,12 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// If configured to reject invalid tokens
-	if clientSettings.RejectInvalidTokens && !serverResponse.DisableTokens {
+	if viper.GetBool("security.reject_invalid_tokens") && !serverResponse.DisableTokens {
 		// Verify token if checking for invalid token and not a test chapter
-		code, err := verifyToken(tokens["token"], tokens["chapter_hash"])
-		if err != nil {
+		if code, err := verifyToken(tokens["token"], tokens["chapter_hash"]); err != nil {
 			requestLogger.WithFields(logrus.Fields{"event": "dropped", "reason": "invalid token"}).Warnf("Request from %s dropped due to invalid token", remoteAddr)
-			w.WriteHeader(code)
 			clientDroppedTotal.Inc()
+			w.WriteHeader(code)
 			return
 		}
 	}
@@ -176,7 +120,15 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	sanitizedURL := "/" + tokens["image_type"] + "/" + tokens["chapter_hash"] + "/" + tokens["image_filename"]
 
 	// Update requestLogger with new fields
-	requestLogger = log.WithFields(logrus.Fields{"url_path": r.URL.Path, "remote_addr": remoteAddr, "referer": r.Header.Get("Referer"), "token": tokens["token"], "image_type": tokens["image_type"], "chapter_hash": tokens["chapter_hash"], "filename": tokens["image_filename"]})
+	requestLogger = requestLogger.WithFields(logrus.Fields{
+		"url_path":     r.URL.Path,
+		"remote_addr":  remoteAddr,
+		"referer":      r.Header.Get("Referer"),
+		"token":        tokens["token"],
+		"image_type":   tokens["image_type"],
+		"chapter_hash": tokens["chapter_hash"],
+		"filename":     tokens["image_filename"],
+	})
 
 	// Update last request
 	timeLastRequest = time.Now()
@@ -195,7 +147,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	// Depending on client configuration, choose to hide Server header identifier
-	if clientSettings.SendServerHeader {
+	if viper.GetBool("security.send_server_header") {
 		serverHeader := fmt.Sprintf("MD@Home Golang Client %s (%d) - github.com/lflare/mdathome-golang", ClientVersion, ClientSpecification)
 		w.Header().Set("Server", serverHeader)
 	}
@@ -224,7 +176,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 		defer imageFile.Close()
 
 		// Check if client is running in low-memory mode
-		if !clientSettings.LowMemoryMode {
+		if !viper.GetBool("performance.low_memory_mode") {
 			// Load image from disk to buffer if not low-memory mode
 			imageBuffer.Grow(int(imageSize))
 			if _, err := io.Copy(&imageBuffer, imageFile); err != nil {
@@ -232,7 +184,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Check if verifying image integrity
-			if clientSettings.VerifyImageIntegrity && tokens["image_type"] == "data" {
+			if viper.GetBool("security.verify_image_integrity") && tokens["image_type"] == "data" {
 				// Check and get hash from image filename
 				subTokens := strings.Split(tokens["image_filename"], "-")
 				if len(subTokens) == 2 {
@@ -258,7 +210,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if image refresh is enabled and Cache-Control header is set
-	if clientSettings.AllowVisitorRefresh && r.Header.Get("Cache-Control") == "no-cache" {
+	if viper.GetBool("security.allow_visitor_cache_refresh") && r.Header.Get("Cache-Control") == "no-cache" {
 		// Log cache ignored
 		requestLogger.WithFields(logrus.Fields{"event": "no-cache"}).Debugf("Request from %s ignored cache", remoteAddr)
 		clientRefreshedTotal.Inc()
@@ -386,49 +338,38 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 // ShrinkDatabase initialises and shrinks the MD@Home database
 func ShrinkDatabase() {
-	// Load & prepare client settings
-	loadClientSettings()
-	saveClientSettings()
-
 	// Prepare diskcache
 	log.Info("Preparing database...")
-	cache = diskcache.New(clientSettings.CacheDirectory, 0, 0, 0, 0, log, clientCacheSize, clientCacheLimit)
+	cache = OpenCache(viper.GetString(KeyCacheDirectory), 0)
 	defer cache.Close()
 
 	// Attempts to start cache shrinking
 	log.Info("Shrinking database...")
-	if err := cache.ShrinkDatabase(); err != nil {
+	if err := cache.Shrink(); err != nil {
 		log.Errorf("Failed to shrink database: %v", err)
 	}
 }
 
 // StartServer starts the MD@Home client
 func StartServer() {
+	// Watch for configuration changes
+	configureConfigAutoReload()
+
 	// Check client version
 	checkClientVersion()
 
-	// Load & prepare client settings
-	loadClientSettings()
-	saveClientSettings()
-
 	// Initialise logger
-	initLogger(clientSettings.LogLevel, clientSettings.MaxLogSizeInMebibytes, clientSettings.MaxLogBackups, clientSettings.MaxLogAgeInDays)
+	initLogger(viper.GetString("log.level"), viper.GetInt("log.max_size_mebibytes"), viper.GetInt("log.max_backups"), viper.GetInt("log.max_age_days"))
 
 	// Prepare diskcache
-	cache = diskcache.New(
-		clientSettings.CacheDirectory,
-		clientSettings.MaxCacheSizeInMebibytes*1024*1024,
-		clientSettings.CacheScanIntervalInSeconds,
-		clientSettings.CacheRefreshAgeInSeconds,
-		clientSettings.MaxCacheScanTimeInSeconds,
-		log,
-		clientCacheSize,
-		clientCacheLimit,
+	cache = OpenCache(
+		viper.GetString(KeyCacheDirectory),
+		viper.GetInt(KeyCacheSize)*1024*1024,
 	)
 	defer cache.Close()
 
 	// Prepare MaxMind geolocation database
-	if clientSettings.MaxMindLicenseKey != "" {
+	if viper.GetString("metrics.maxmind_license_key") != "" {
 		log.Warnf("Loading geolocation data in the background...")
 		go prepareGeoIPDatabase()
 		defer geodb.Close()
@@ -439,7 +380,7 @@ func StartServer() {
 		Transport: &http.Transport{
 			MaxIdleConns:      10,
 			IdleConnTimeout:   60 * time.Second,
-			DisableKeepAlives: !clientSettings.AllowUpstreamPooling,
+			DisableKeepAlives: !viper.GetBool("performance.upstream_connection_reuse"),
 		},
 		Timeout: 30 * time.Second,
 	}
@@ -448,14 +389,14 @@ func StartServer() {
 	registerShutdownHandler()
 
 	// Prepare TLS reloader
-	certHandler = NewCertificateReloader(backendGetCertificate())
+	certHandler = NewCertificateReloader(controlGetCertificate())
 	go func() {
 		for {
 			time.Sleep(24 * time.Hour)
 
 			// Update certificate
 			log.Infof("Reloading certificates...")
-			if err := certHandler.updateCertificate(backendGetCertificate()); err != nil {
+			if err := certHandler.updateCertificate(controlGetCertificate()); err != nil {
 				log.Errorf("Failed to reload certificate: %v", err)
 			}
 		}
@@ -479,14 +420,14 @@ func StartServer() {
 	})
 
 	// Handle Prometheus metrics
-	if clientSettings.EnablePrometheusMetrics {
-		r.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
+	r.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
+		if viper.GetBool("metrics.enable_prometheus") {
 			metrics.WritePrometheus(w, true)
-		})
-	}
+		}
+	})
 
 	// If configured behind reverse proxies
-	if clientSettings.UseReverseProxyHeaders {
+	if viper.GetBool("metrics.use_forwarded_for_headers") {
 		r.Use(handlers.ProxyHeaders)
 	}
 
@@ -494,7 +435,7 @@ func StartServer() {
 	http.Handle("/", handlers.RecoveryHandler()(handlers.CompressHandler(r)))
 
 	// Start server
-	err := listenAndServeTLSKeyPair(clientSettings, r)
+	err := listenAndServeTLSKeyPair(r)
 	if err != nil {
 		log.Fatalf("Cannot start server: %v", err)
 	}

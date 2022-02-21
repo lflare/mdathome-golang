@@ -1,74 +1,16 @@
 package mdathome
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/tcnksm/go-latest"
 )
-
-func saveClientSettings() {
-	clientSettingsSampleBytes, err := json.MarshalIndent(clientSettings, "", "    ")
-	if err != nil {
-		log.Fatalln("Failed to marshal sample settings.json")
-	}
-
-	err = ioutil.WriteFile(ConfigFilePath, clientSettingsSampleBytes, 0600)
-	if err != nil {
-		log.Fatalf("Failed to create sample settings.json: %v", err)
-	}
-}
-
-func loadClientSettings() {
-	// Read JSON from file
-	clientSettingsJSON, err := ioutil.ReadFile(ConfigFilePath)
-	if err != nil {
-		log.Printf("Failed to read client configuration file - %v", err)
-		saveClientSettings()
-		log.Fatalf("Created sample settings.json! Please edit it before running again!")
-	}
-
-	// Unmarshal JSON to clientSettings struct
-	err = json.Unmarshal(clientSettingsJSON, &clientSettings)
-	if err != nil {
-		log.Fatalf("Unable to unmarshal JSON file: %v", err)
-	}
-
-	// Migrate settings to the latest version
-	migrateClientSettings(&clientSettings)
-
-	// Check client configuration
-	if clientSettings.ClientSecret == "" {
-		log.Fatalf("Empty secret! Cannot run!")
-	}
-
-	if clientSettings.CacheDirectory == "" {
-		log.Fatalf("Empty cache directory! Cannot run!")
-	}
-
-	// Print client configuration
-	log.Printf("Client configuration loaded: %+v", clientSettings)
-}
-
-func migrateClientSettings(cs *ClientSettings) {
-	// Migrate from settings before version 1
-	switch cs.Version {
-	case 0:
-		cs.OverrideSizeReport = cs.MaxReportedSizeInMebibytes
-		cs.MaxReportedSizeInMebibytes = 0
-		cs.Version = 1
-		fallthrough
-	case 1:
-		cs.RejectInvalidSNI = false
-		cs.Version = 2
-	}
-}
 
 func checkClientVersion() {
 	// Prepare version check
@@ -94,39 +36,33 @@ func checkClientVersion() {
 }
 
 func startBackgroundWorker() {
-	// Wait 10 seconds
+	// Wait 15 seconds
 	log.Println("Starting background jobs!")
-	time.Sleep(10 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	for running {
 		// Reload client configuration
 		log.Println("Reloading client configuration")
-		loadClientSettings()
 
 		// Update log level if need be
-		newLogLevel, err := logrus.ParseLevel(clientSettings.LogLevel)
+		newLogLevel, err := logrus.ParseLevel(viper.GetString("log.level"))
 		if err == nil {
 			log.SetLevel(newLogLevel)
 		}
 
-		// Update max cache size
-		cache.UpdateCacheLimit(clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024)
-		cache.UpdateCacheScanInterval(clientSettings.CacheScanIntervalInSeconds)
-		cache.UpdateCacheRefreshAge(clientSettings.CacheRefreshAgeInSeconds)
-
 		// Update server response in a goroutine
-		newServerResponse := backendPing()
+		newServerResponse := controlPing()
 		if newServerResponse != nil {
 			// Check if overriding upstream
-			if clientSettings.OverrideUpstream != "" {
-				newServerResponse.ImageServer = clientSettings.OverrideUpstream
+			if viper.GetString("override.upstream") != "" {
+				newServerResponse.ImageServer = viper.GetString("override.upstream")
 			}
 
 			serverResponse = *newServerResponse
 		}
 
-		// Wait 10 seconds
-		time.Sleep(10 * time.Second)
+		// Wait 15 seconds
+		time.Sleep(15 * time.Second)
 	}
 }
 
@@ -145,7 +81,7 @@ func registerShutdownHandler() {
 		running = false
 
 		// Send shutdown command to backend
-		backendShutdown()
+		controlShutdown()
 
 		// Wait till last request is normalised
 		timeShutdown := time.Now()
@@ -154,7 +90,7 @@ func registerShutdownHandler() {
 			log.Printf("%.2f seconds have elapsed since CTRL-C", secondsSinceLastRequest)
 
 			// Give up after one minute
-			if time.Since(timeShutdown).Seconds() > float64(clientSettings.GracefulShutdownInSeconds) {
+			if time.Since(timeShutdown).Seconds() > float64(viper.GetFloat64("client.graceful_shutdown_seconds")) {
 				log.Printf("Giving up, quitting now!")
 				break
 			}
@@ -168,3 +104,25 @@ func registerShutdownHandler() {
 		os.Exit(0)
 	}()
 }
+
+// ByteCountIEC returns a human-readable string describing the size of bytes in int
+func ByteCountIEC(b int) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB",
+		float64(b)/float64(div), "KMGTPE"[exp])
+}
+
+// ByTimestamp is a sortable slice of KeyPair based off timestamp
+type ByTimestamp []KeyPair
+
+func (a ByTimestamp) Len() int           { return len(a) }
+func (a ByTimestamp) Less(i, j int) bool { return a[i].Timestamp < a[j].Timestamp }
+func (a ByTimestamp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

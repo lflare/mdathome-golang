@@ -5,93 +5,97 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-// Server ping handler
-func backendPing() *ServerResponse {
-	// Create settings JSON
-	settings := ServerSettings{
-		Secret:       clientSettings.ClientSecret,
-		Port:         clientSettings.ClientPort,
-		DiskSpace:    clientSettings.MaxCacheSizeInMebibytes * 1024 * 1024, // 1GB
-		NetworkSpeed: clientSettings.MaxKilobitsPerSecond * 1000 / 8,       // 100Mbps
-		BuildVersion: ClientSpecification,
-		TLSCreatedAt: nil,
-	}
+var controlClient *http.Client
 
-	// Check if we are overriding reported port
-	if clientSettings.OverridePortReport != 0 {
-		settings.Port = clientSettings.OverridePortReport
-	}
-
-	// Check if we are overriding reported address
-	if clientSettings.OverrideAddressReport != "" {
-		settings.IPAddress = clientSettings.OverrideAddressReport
-	}
-
-	// Check if we are overriding reported cache size
-	if clientSettings.OverrideSizeReport != 0 {
-		settings.DiskSpace = clientSettings.OverrideSizeReport * 1024 * 1024
-	}
-
-	// Marshal JSON
-	settingsJSON, _ := json.Marshal(&settings)
-
-	// Prepare backend client
-	client = &http.Client{
+func init() {
+	// Prepare control server HTTP client
+	controlClient = &http.Client{
 		Transport: &http.Transport{
 			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 				return net.Dial("tcp4", addr)
 			},
 		},
 	}
+}
 
-	// Ping backend server
-	r, err := client.Post(clientSettings.APIBackend+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
+func controlPing() *ServerResponse {
+	// Prepare logger
+	log := log.WithFields(logrus.Fields{"type": "control"})
+
+	// Create settings JSON
+	settings := ServerSettings{
+		Secret:       viper.GetString("client.secret"),
+		Port:         viper.GetInt("client.port"),
+		DiskSpace:    viper.GetInt("cache.max_size_mebibytes") * 1024 * 1024, // 1GB
+		NetworkSpeed: viper.GetInt("client.max_speed_kbps") * 1000 / 8,       // 100Mbps
+		BuildVersion: ClientSpecification,
+		TLSCreatedAt: nil,
+	}
+
+	// Override necessary settings
+	if viper.GetInt("override.port") != 0 {
+		settings.Port = viper.GetInt("override.port")
+	}
+	if viper.GetString("override.address") != "" {
+		settings.IPAddress = viper.GetString("override.address")
+	}
+	if viper.GetInt("override.size") != 0 {
+		settings.DiskSpace = viper.GetInt("override.size") * 1024 * 1024
+	}
+
+	// Marshal server settings to JSON
+	settingsJSON, _ := json.Marshal(&settings)
+
+	// Ping control server
+	res, err := controlClient.Post(viper.GetString("client.control_server")+"/ping", "application/json", bytes.NewBuffer(settingsJSON))
 	if err != nil {
-		log.Printf("Failed to ping control server: %v", err)
+		log.Errorf("Failed to ping control server: %v", err)
 		return nil
 	}
-	defer r.Body.Close()
+	defer res.Body.Close()
 
-	// Read response fully
-	response, err := ioutil.ReadAll(r.Body)
+	// Read server response fully
+	controlResponse, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Printf("Failed to ping control server: %v", err)
+		log.Errorf("Failed to ping control server: %v", err)
 		return nil
 	}
 
-	// Print server settings out
-	printableResponse := string(response)
-	tlsIndex := strings.Index(printableResponse, "\"tls\"")
+	// Verify TLS certificate exists in response before proceeding
+	tlsIndex := strings.Index(string(controlResponse), "\"tls\"")
 	if tlsIndex == -1 {
-		log.Printf("Received invalid server response: %s", printableResponse)
+		log.Errorf("Received invalid server response: %s", controlResponse)
 
+		// If existing TLS certificate not already running in client, fail spectacularly
 		if serverResponse.TLS.Certificate == "" {
 			log.Fatalln("No valid TLS certificate found in memory, cannot continue!")
 		}
+
+		// Return early if unable to proceed
 		return nil
 	}
-	log.Printf("Server settings received! - %s...", string(response[:tlsIndex]))
+	log.Infof("Server settings received! - %s...", string(controlResponse[:tlsIndex]))
 
 	// Decode & unmarshal server response
-	newServerResponse := ServerResponse{
-		DisableTokens: false, // Default to not force disabling tokens
-	}
-	err = json.Unmarshal(response, &newServerResponse)
-	if err != nil {
-		log.Printf("Failed to ping control server: %v", err)
+	newServerResponse := ServerResponse{}
+	if err := json.Unmarshal(controlResponse, &newServerResponse); err != nil {
+		log.Errorf("Failed to ping control server: %v", err)
 		return nil
 	}
 
 	// Check response for valid image server
 	if newServerResponse.ImageServer == "" {
-		log.Printf("Failed to verify server response: %s", response)
+		log.Printf("Failed to verify server response: %s", controlResponse)
 		return nil
 	}
 
@@ -103,22 +107,22 @@ func backendPing() *ServerResponse {
 	return &newServerResponse
 }
 
-func backendShutdown() {
-	// Sent stop request to backend
+func controlShutdown() {
+	// Send stop request to control server
 	request := ServerRequest{
-		Secret: clientSettings.ClientSecret,
+		Secret: viper.GetString("client.secret"),
 	}
 	requestJSON, _ := json.Marshal(&request)
-	r, err := http.Post(clientSettings.APIBackend+"/stop", "application/json", bytes.NewBuffer(requestJSON))
-	if err != nil {
+	if res, err := http.Post(viper.GetString("client.control_server")+"/stop", "application/json", bytes.NewBuffer(requestJSON)); err != nil {
 		log.Fatalf("Failed to shutdown server gracefully: %v", err)
+	} else {
+		res.Body.Close()
 	}
-	defer r.Body.Close()
 }
 
-func backendGetCertificate() tls.Certificate {
-	// Make backend ping
-	serverResponse = *backendPing()
+func controlGetCertificate() tls.Certificate {
+	// Make control ping
+	serverResponse = *controlPing()
 	if serverResponse.TLS.Certificate == "" {
 		log.Fatalln("Unable to contact API server!")
 	}

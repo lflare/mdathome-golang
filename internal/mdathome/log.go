@@ -6,16 +6,16 @@ import (
 	colorable "github.com/mattn/go-colorable"
 	"github.com/sirupsen/logrus"
 	"github.com/snowzach/rotatefilehook"
+	"github.com/spf13/viper"
 )
 
 var log = logrus.New()
 
-// InitLogger initialises global logger
 func initLogger(logLevelString string, maxLogSizeInMb int, maxLogBackups int, maxLogAgeInDays int) {
 	logLevel, _ := logrus.ParseLevel(logLevelString)
 
 	rotateFileHook, err := rotatefilehook.NewRotateFileHook(rotatefilehook.RotateFileConfig{
-		Filename:   clientSettings.LogDirectory + "/mdathome.log",
+		Filename:   viper.GetString("log.directory") + "/mdathome.log",
 		MaxSize:    maxLogSizeInMb,
 		MaxBackups: 3,
 		MaxAge:     28,

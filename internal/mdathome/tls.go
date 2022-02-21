@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/spacemonkeygo/tlshowdy"
+	"github.com/spf13/viper"
 )
 
 type tcpKeepAliveListener struct {
@@ -34,7 +35,7 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	}
 
 	// Check SNI if configured to do so
-	if clientSettings.RejectInvalidSNI {
+	if viper.GetBool("security.reject_invalid_sni") {
 		// Set deadline to prevent connection leaks
 		if err = tc.SetDeadline(time.Now().Add(5 * time.Second)); err != nil {
 			log.Warn(fmt.Sprintf("failed to SetDeadline(): %s", err))
@@ -76,16 +77,16 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	return tc, nil
 }
 
-func listenAndServeTLSKeyPair(clientSettings ClientSettings, handler http.Handler) error {
+func listenAndServeTLSKeyPair(handler http.Handler) error {
 	// Build address
-	addr := ":" + strconv.Itoa(clientSettings.ClientPort)
+	addr := ":" + strconv.Itoa(viper.GetInt("client.port"))
 
 	// Build HTTP server configuration
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      handler,
-		ReadTimeout:  time.Second * time.Duration(clientSettings.ClientTimeout),
-		WriteTimeout: time.Second * time.Duration(clientSettings.ClientTimeout),
+		ReadTimeout:  time.Second * time.Duration(viper.GetDuration("performance.client_timeout_seconds")),
+		WriteTimeout: time.Second * time.Duration(viper.GetDuration("performance.client_timeout_seconds")),
 	}
 	config := &tls.Config{
 		PreferServerCipherSuites: true,
@@ -99,7 +100,7 @@ func listenAndServeTLSKeyPair(clientSettings ClientSettings, handler http.Handle
 	config.GetCertificate = certHandler.GetCertificate()
 
 	// If allowing http2
-	if clientSettings.AllowHTTP2 {
+	if viper.GetBool("performance.allow_http2") {
 		config.NextProtos = []string{"h2", "http/1.1"}
 	} else {
 		config.NextProtos = []string{"http/1.1"}

@@ -21,7 +21,7 @@ ARCHITECTURES = 386 amd64 arm arm64
 LDFLAGS = "-X github.com/lflare/mdathome-golang/internal/mdathome.ClientVersion=${VERSION} -X mdathome.Build=${BUILD}"
 
 default:
-	CGO_ENABLED=0 go build -o ./mdathome-golang -tags netgo -trimpath -ldflags=${LDFLAGS} ./cmd/mdathome
+	CGO_ENABLED=0 go build -o ./mdathome-golang -tags netgo -trimpath -ldflags=${LDFLAGS} .
 	upx -qq mdathome-golang
 
 snapshot:
