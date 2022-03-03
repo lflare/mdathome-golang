@@ -353,7 +353,7 @@ func ShrinkDatabase() {
 // StartServer starts the MD@Home client
 func StartServer() {
 	// Watch for configuration changes
-	configureConfigAutoReload()
+	prepareConfiguration()
 
 	// Check client version
 	checkClientVersion()

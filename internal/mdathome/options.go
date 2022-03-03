@@ -13,6 +13,6 @@ func (c *Cache) getOptions() *bolt.Options {
 	return options
 }
 
-func configureConfigAutoReload() {
+func prepareConfigurationReload() {
 	// Do absolutely nothing because Windows does not support
 }
