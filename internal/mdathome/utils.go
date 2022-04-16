@@ -41,9 +41,6 @@ func startBackgroundWorker() {
 	time.Sleep(15 * time.Second)
 
 	for running {
-		// Reload client configuration
-		log.Println("Reloading client configuration")
-
 		// Update log level if need be
 		newLogLevel, err := logrus.ParseLevel(viper.GetString("log.level"))
 		if err == nil {
