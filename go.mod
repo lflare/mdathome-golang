@@ -1,6 +1,6 @@
 module github.com/lflare/mdathome-golang
 
-go 1.17
+go 1.18
 
 require (
 	github.com/VictoriaMetrics/metrics v1.18.1
