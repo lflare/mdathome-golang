@@ -375,14 +375,18 @@ func StartServer() {
 		defer geodb.Close()
 	}
 
+	// Prepare transport
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.MaxIdleConns = 100
+	transport.MaxIdleConnsPerHost = 100
+	transport.MaxConnsPerHost = 0
+	transport.IdleConnTimeout = 60 * time.Second
+	transport.DisableKeepAlives = !viper.GetBool("performance.upstream_connection_reuse")
+
 	// Prepare upstream client
 	client = &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConns:      10,
-			IdleConnTimeout:   60 * time.Second,
-			DisableKeepAlives: !viper.GetBool("performance.upstream_connection_reuse"),
-		},
-		Timeout: 30 * time.Second,
+		Transport: transport,
+		Timeout:   30 * time.Second,
 	}
 
 	// Register shutdown handler
