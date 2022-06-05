@@ -57,26 +57,23 @@ func setDefaultConfiguration() {
 
 func prepareConfiguration() {
 	// Configure Viper
+	configFile := "config.toml"
+	configType := "toml"
 	viper.AddConfigPath(".")
-	viper.SetConfigName("config.toml")
-	viper.SetConfigType("toml")
+	viper.SetConfigFile(configFile)
+	viper.SetConfigType(configType)
 
 	// Set default configuration
 	setDefaultConfiguration()
 
 	// Load in configuration
 	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Write default configuration file if not exists
-			log.Info("Configuration not found, creating!")
-			if err := viper.SafeWriteConfig(); err != nil {
-				log.Fatalf("Failed to write default configuration to 'config.toml'!")
-			} else {
-				log.Fatalf("Default configuration written to 'config.toml', please modify before running client again!")
-			}
+		// Write default configuration file if not exists
+		log.Infof("Could not read configuration: '%v', attempting to create configuration!", err)
+		if err := viper.SafeWriteConfig(); err != nil {
+			log.Fatalf("Failed to write default configuration to '%s': %v", configFile, err)
 		} else {
-			// Config file was found but another error was produced
-			log.Errorf("Failed to read configuration: %v", err)
+			log.Fatalf("Default configuration written to '%s', please modify before running client again!", configFile)
 		}
 	}
 
