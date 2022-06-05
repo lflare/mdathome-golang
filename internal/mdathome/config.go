@@ -1,59 +1,59 @@
 package mdathome
 
 import (
-	"os"
-
 	"github.com/spf13/viper"
 )
 
-var defaultConfiguration string = `version = 2
+func setDefaultConfiguration() {
+	// [version]
+	viper.SetDefault("version", 2)
 
-[client]
-control_server = "https://api.mangadex.network"
-graceful_shutdown_seconds = 300
-max_speed_kbps = 10000
-port = 443
-secret = ""
+	// [client]
+	viper.SetDefault("client.control_server", "https://api.mangadex.network")
+	viper.SetDefault("client.graceful_shutdown_seconds", 300)
+	viper.SetDefault("client.max_speed_kbps", 10000)
+	viper.SetDefault("client.port", 443)
+	viper.SetDefault("client.secret", "")
 
-[override]
-address = ""
-port = 0
-size = 0
-upstream = ""
+	// [override]
+	viper.SetDefault("override.address", "")
+	viper.SetDefault("override.port", 0)
+	viper.SetDefault("override.size", 0)
+	viper.SetDefault("override.upstream", "")
 
-[cache]
-directory = "cache/"
-max_scan_interval_seconds = 300
-max_scan_time_seconds = 60
-max_size_mebibytes = 10240
-refresh_age_seconds = 86400
+	// [cache]
+	viper.SetDefault("cache.directory", "cache/")
+	viper.SetDefault("cache.max_scan_interval_seconds", 300)
+	viper.SetDefault("cache.max_scan_time_seconds", 60)
+	viper.SetDefault("cache.max_size_mebibytes", 10240)
+	viper.SetDefault("cache.refresh_age_seconds", 86400)
 
-[performance]
-allow_http2 = true
-client_timeout_seconds = 60
-low_memory_mode = true
-upstream_connection_reuse = true
+	// [performance]
+	viper.SetDefault("performance.allow_http2", true)
+	viper.SetDefault("performance.client_timeout_seconds", 60)
+	viper.SetDefault("performance.low_memory_mode", true)
+	viper.SetDefault("performance.upstream_connection_reuse", true)
 
-[security]
-allow_visitor_cache_refresh = false
-reject_invalid_hostname = false
-reject_invalid_sni = false
-reject_invalid_tokens = true
-send_server_header = false
-use_forwarded_for_headers = false
-verify_image_integrity = false
+	// [security]
+	viper.SetDefault("security.allow_visitor_cache_refresh", false)
+	viper.SetDefault("security.reject_invalid_hostname", false)
+	viper.SetDefault("security.reject_invalid_sni", false)
+	viper.SetDefault("security.reject_invalid_tokens", true)
+	viper.SetDefault("security.send_server_header", false)
+	viper.SetDefault("security.use_forwarded_for_headers", false)
+	viper.SetDefault("security.verify_image_integrity", false)
 
-[metrics]
-enable_prometheus = false
-maxmind_license_key = ""
+	// [metric]
+	viper.SetDefault("metric.enable_prometheus", false)
+	viper.SetDefault("metric.maxmind_license_key", "")
 
-[log]
-directory = "log/"
-level = "info"
-max_age_days = 7
-max_backups = 3
-max_size_mebibytes = 64
-`
+	// [log]
+	viper.SetDefault("log.directory", "log/")
+	viper.SetDefault("log.level", "info")
+	viper.SetDefault("log.max_age_days", 7)
+	viper.SetDefault("log.max_backups", 3)
+	viper.SetDefault("log.max_size_mebibytes", 64)
+}
 
 func prepareConfiguration() {
 	// Configure Viper
@@ -61,12 +61,15 @@ func prepareConfiguration() {
 	viper.SetConfigName("config.toml")
 	viper.SetConfigType("toml")
 
+	// Set default configuration
+	setDefaultConfiguration()
+
 	// Load in configuration
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error if desired
+			// Write default configuration file if not exists
 			log.Info("Configuration not found, creating!")
-			if err := os.WriteFile("config.toml", []byte(defaultConfiguration), 0600); err != nil {
+			if err := viper.SafeWriteConfig(); err != nil {
 				log.Fatalf("Failed to write default configuration to 'config.toml'!")
 			} else {
 				log.Fatalf("Default configuration written to 'config.toml', please modify before running client again!")
@@ -75,6 +78,11 @@ func prepareConfiguration() {
 			// Config file was found but another error was produced
 			log.Errorf("Failed to read configuration: %v", err)
 		}
+	}
+
+	// Update default configuration file
+	if err := viper.WriteConfig(); err != nil {
+		log.Errorf("Failed to update configuration file: '%v'. Please check permissions!", err)
 	}
 
 	// Configure auto-reload
