@@ -23,8 +23,8 @@ func setDefaultConfiguration() {
 
 	// [cache]
 	viper.SetDefault("cache.directory", "cache/")
-	viper.SetDefault("cache.max_scan_interval_seconds", 300)
-	viper.SetDefault("cache.max_scan_time_seconds", 60)
+	viper.SetDefault("cache.max_scan_interval_seconds", 900)
+	viper.SetDefault("cache.max_scan_time_seconds", 300)
 	viper.SetDefault("cache.max_size_mebibytes", 10240)
 	viper.SetDefault("cache.refresh_age_seconds", 86400)
 
