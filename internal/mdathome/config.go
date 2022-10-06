@@ -45,6 +45,7 @@ func setDefaultConfiguration() {
 
 	// [metric]
 	viper.SetDefault("metrics.enable_prometheus", false)
+	viper.SetDefault("metrics.enable_geoip", false)
 	viper.SetDefault("metrics.maxmind_license_key", "")
 
 	// [log]

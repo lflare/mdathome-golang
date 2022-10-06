@@ -49,7 +49,7 @@ func requestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse GeoIP
 	labels := ""
-	if geodb != nil {
+	if geodb != nil && viper.GetBool("metrics.enable_geoip") {
 		ip := net.ParseIP(remoteAddr)
 		record, err := geodb.City(ip)
 		if err == nil && record.Country.IsoCode != "" {
