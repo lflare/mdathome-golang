@@ -44,8 +44,8 @@ func setDefaultConfiguration() {
 	viper.SetDefault("security.verify_image_integrity", false)
 
 	// [metric]
-	viper.SetDefault("metric.enable_prometheus", false)
-	viper.SetDefault("metric.maxmind_license_key", "")
+	viper.SetDefault("metrics.enable_prometheus", false)
+	viper.SetDefault("metrics.maxmind_license_key", "")
 
 	// [log]
 	viper.SetDefault("log.directory", "log/")
