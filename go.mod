@@ -1,6 +1,6 @@
 module github.com/lflare/mdathome-golang
 
-go 1.18
+go 1.19
 
 require (
 	github.com/VictoriaMetrics/metrics v1.23.0
@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/snowzach/rotatefilehook v0.0.0-20220211133110-53752135082d
 	github.com/spacemonkeygo/tlshowdy v0.0.0-20160207005338-8fa2cec1d7cd
-	github.com/spf13/viper v1.13.0
+	github.com/spf13/viper v1.14.0
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.1.0
