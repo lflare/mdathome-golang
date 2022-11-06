@@ -26,7 +26,7 @@ jobs:
       - name: Load Golang modules from cache
         uses: martijnhols/actions-cache/restore@v3
         with:
-          path: ~/go/pkg/mod
+          path: ~/go
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
