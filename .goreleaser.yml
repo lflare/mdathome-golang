@@ -18,7 +18,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - "{{.Env.LDFLAGS}}"
+      - "{{.Env.LDFLAGS}} -s -w"
     hooks:
       post:
         - /bin/sh -c "upx -q '{{.Path}}' || true"
