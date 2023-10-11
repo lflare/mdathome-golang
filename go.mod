@@ -15,7 +15,7 @@ require (
 	github.com/spf13/viper v1.14.0
 	github.com/tcnksm/go-latest v0.0.0-20170313132115-e3007ae9052e
 	go.etcd.io/bbolt v1.3.6
-	golang.org/x/crypto v0.1.0
+	golang.org/x/crypto v0.14.0
 )
 
 require (
@@ -37,9 +37,9 @@ require (
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/valyala/histogram v1.2.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
