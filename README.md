@@ -22,8 +22,15 @@ Do not worry, this is just the client creating a sample configuration, as it is 
 If you fancy yourself a hardcore masochist that likes to compile everything yourself manually, feel free to do so!
 
 ```bash
-root@af04d92d0b1e:/go# go get github.com/lflare/mdathome-golang
-root@af04d92d0b1e:/go# go run github.com/lflare/mdathome-golang
+go get github.com/lflare/mdathome-golang
+go run github.com/lflare/mdathome-golang
+```
+
+#### Docker
+If you want to run the client in a Docker container you can do so! Make sure to point the container to your cache and configuration file location.
+
+```bash
+docker run -d -v /path/to/your/cache:/mangahome/cache -v /path/to/your/settings.json:/mangahome/settings.json -p 443:443 lflare/mdathome-golang:latest
 ```
 
 ## Common Problems
